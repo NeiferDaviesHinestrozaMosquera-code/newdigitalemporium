@@ -1,1 +1,36 @@
+# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
+
+# Dependencies
 node_modules/
+.pnp
+.pnp.js
+.yarn/install-state.gz
+
+# Next.js build output and cache
+.next/
+out/
+
+# IDE and Editor directories
+.vscode/
+.idea/
+.idx/
+
+# Environment variables
+.env
+.env*.local
+
+# Firebase-specific directories (to prevent conflicts with Cloudflare deployment)
+functions/
+digitalemporiumdb/
+
+# Log files
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Other
+*.suo
+*.user
+*.userosscache
+*.sln
+*.DotSettings.user
