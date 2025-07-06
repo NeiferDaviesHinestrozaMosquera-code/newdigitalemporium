@@ -1,70 +1,96 @@
-
-import ProjectCard from '@/components/shared/ProjectCard';
 import type { Metadata } from 'next';
-import { Briefcase } from 'lucide-react';
-import type { Project } from '@/lib/placeholder-data';
-import { db } from "@/lib/firebase/config";
-import { ref, get, child } from "firebase/database";
+import { Mail, Phone, MapPin, Send } from 'lucide-react';
 import { getDictionary } from '@/lib/i18n/get-dictionary';
 import { i18n, type Locale } from '@/lib/i18n/i18n-config';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import Link from 'next/link';
+import { getSiteContentAction } from '@/components/admin/actions';
+import type { ContactPageContent } from '@/lib/placeholder-data';
 
-export async function generateMetadata({ params }: { params?: { lang?: Locale } }): Promise<Metadata> {
-  const lang = params?.lang || i18n.defaultLocale;
-  const dictionary = await getDictionary(lang);
+export async function generateMetadata({ params }: { params: Promise<{ lang: Locale }> }): Promise<Metadata> {
+  const { lang } = await params;
+  const siteContent = await getSiteContentAction();
   return {
-    title: dictionary.projectsPageTitle as string,
-    description: dictionary.projectsPageDescription as string,
+    title: siteContent.contactPage.pageTitle[lang] || "Contact Us",
+    description: siteContent.contactPage.subHeading[lang] || "Get in touch with us.",
   };
 }
 
-async function getProjectsFromDB(): Promise<Project[]> {
-  try {
-    const dbRef = ref(db);
-    const snapshot = await get(child(dbRef, `projects`));
-    if (snapshot.exists()) {
-      const projectsObject = snapshot.val();
-      const projectsArray = Object.keys(projectsObject)
-        .map(key => ({ id: key, ...projectsObject[key] }))
-        .sort((a, b) => a.title.localeCompare(b.title)); 
-      return projectsArray as Project[];
-    } else {
-      return [];
-    }
-  } catch (error) {
-    console.error("Error fetching projects from Firebase DB for public page:", error);
-    return [];
-  }
-}
+export default async function ContactPage({ params }: { params: Promise<{ lang: Locale }> }) {
+  const { lang } = await params;
+  const dictionary = await getDictionary(lang); // For static UI elements like button text
+  const siteContent = await getSiteContentAction();
+  const contact = siteContent.contactPage;
 
-export default async function ProjectsPage({ params }: { params?: { lang?: Locale } }) {
-  const lang = params?.lang || i18n.defaultLocale;
-  const projects = await getProjectsFromDB();
-  const dictionary = await getDictionary(lang);
+  const contactMethods = [
+    {
+      icon: Mail,
+      title: contact.emailLabel[lang],
+      value: contact.emailValue,
+      href: `mailto:${contact.emailValue}`,
+    },
+    {
+      icon: Phone,
+      title: contact.phoneLabel[lang],
+      value: contact.phoneValue,
+      href: `tel:${contact.phoneValue.replace(/\s/g, '')}`,
+    },
+    {
+      icon: MapPin,
+      title: contact.addressLabel[lang],
+      value: contact.addressValue[lang],
+      href: "#", // Placeholder for map link or directions
+    },
+  ];
 
   return (
     <div className="container mx-auto px-4 py-12 md:py-16">
-      <div className="text-center mb-12 md:mb-16">
-        <Briefcase className="w-16 h-16 text-accent mx-auto mb-4" />
-        <h1 className="text-4xl md:text-5xl font-bold text-primary mb-4">
-          {dictionary.projectsPageHeading as string}
+      <header className="text-center mb-12 md:mb-16">
+        <h1 className="text-4xl md:text-5xl font-bold text-primary mb-4 tracking-tight">
+          {contact.heading[lang]}
         </h1>
-        <p className="text-lg text-muted-foreground max-w-3xl mx-auto">
-          {dictionary.projectsPageSubheading as string}
+        <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+          {contact.subHeading[lang]}
         </p>
+      </header>
+
+      <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 mb-12 md:mb-16">
+        {contactMethods.map((method) => (
+          <Card key={method.title} className="shadow-lg hover:shadow-xl transition-shadow duration-300">
+            <CardHeader className="items-center text-center">
+              <div className="p-3 bg-accent/10 rounded-full text-accent mb-3">
+                <method.icon className="h-8 w-8" />
+              </div>
+              <CardTitle className="text-xl text-primary">{method.title}</CardTitle>
+            </CardHeader>
+            <CardContent className="text-center">
+              {method.href !== "#" ? (
+                <Link href={method.href} className="text-muted-foreground hover:text-accent break-words">
+                  {method.value}
+                </Link>
+              ) : (
+                <p className="text-muted-foreground break-words">{method.value}</p>
+              )}
+            </CardContent>
+          </Card>
+        ))}
       </div>
-      {projects.length > 0 ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {projects.map((project, index) => (
-            <div key={project.id} className={`animate-in fade-in slide-in-from-bottom-10 duration-500`} style={{ animationDelay: `${index * 150}ms` }}>
-                <ProjectCard project={project} dictionary={dictionary} />
-            </div>
-          ))}
-        </div>
-      ) : (
-        <div className="text-center py-10">
-          <p className="text-xl text-muted-foreground">We are currently updating our project portfolio. Check back soon!</p>
-        </div>
-      )}
+
+      <section className="text-center py-10 bg-secondary/30 rounded-lg shadow">
+        <h2 className="text-2xl md:text-3xl font-semibold text-primary mb-4">
+          {contact.ctaHeading[lang]}
+        </h2>
+        <p className="text-muted-foreground max-w-xl mx-auto mb-8">
+          {contact.ctaDescription[lang]}
+        </p>
+        <Button asChild size="lg" className="bg-accent hover:bg-accent/90 text-accent-foreground px-8 py-3 text-lg">
+          <Link href={`/${lang}/quote-request`}>
+            <Send className="mr-2 h-5 w-5" />
+            {dictionary.requestAQuoteNow as string} {/* Using dictionary for button text */}
+          </Link>
+        </Button>
+      </section>
     </div>
   );
 }

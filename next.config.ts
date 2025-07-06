@@ -1,7 +1,6 @@
 import type { NextConfig } from 'next';
 
 const nextConfig: NextConfig = {
-  /* config options here */
   typescript: {
     ignoreBuildErrors: true,
   },
@@ -66,19 +65,25 @@ const nextConfig: NextConfig = {
       }
     ],
   },
-  // Configuración de Webpack para resolver problemas con Genkit AI
+  // CORRECCIÓN: Configuración actualizada
+  serverExternalPackages: [
+    '@genkit-ai/googleai',
+    '@genkit-ai/next',
+    'genkit',
+    '@opentelemetry/instrumentation',
+    '@opentelemetry/sdk-node',
+    'handlebars',
+    'dotprompt'
+  ],
   webpack: (config, { buildId, dev, isServer, defaultLoaders, nextRuntime, webpack }) => {
-    // Ignorar advertencias específicas de OpenTelemetry y Handlebars
     config.ignoreWarnings = [
       /Critical dependency: the request of a dependency is an expression/,
       /require\.extensions is not supported by webpack/,
     ];
 
-    // Configuración para módulos externos (solo en el servidor)
     if (isServer) {
       config.externals = config.externals || [];
       config.externals.push(
-        // Externals para evitar problemas de bundling en el servidor
         '@opentelemetry/instrumentation',
         '@opentelemetry/sdk-node',
         'handlebars',
@@ -86,7 +91,6 @@ const nextConfig: NextConfig = {
       );
     }
 
-    // Configuración de resolve para Node.js modules
     config.resolve = config.resolve || {};
     config.resolve.fallback = {
       ...config.resolve.fallback,
@@ -104,7 +108,6 @@ const nextConfig: NextConfig = {
       path: false,
     };
 
-    // Configuración específica para Genkit AI y dependencias
     config.module = config.module || {};
     config.module.rules = config.module.rules || [];
     
@@ -115,7 +118,6 @@ const nextConfig: NextConfig = {
       },
     });
 
-    // Configuración para manejar dependencias dinámicas
     config.module.rules.push({
       test: /node_modules\/@opentelemetry\/instrumentation\/.*\.js$/,
       use: 'null-loader',
@@ -123,18 +125,7 @@ const nextConfig: NextConfig = {
 
     return config;
   },
-  // Configuración experimental para mejorar la compatibilidad
-  experimental: {
-    serverComponentsExternalPackages: [
-      '@genkit-ai/googleai',
-      '@genkit-ai/next',
-      'genkit',
-      '@opentelemetry/instrumentation',
-      '@opentelemetry/sdk-node',
-      'handlebars',
-      'dotprompt'
-    ],
-  },
+
 };
 
 export default nextConfig;

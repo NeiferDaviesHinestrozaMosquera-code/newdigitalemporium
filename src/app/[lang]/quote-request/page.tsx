@@ -1,4 +1,3 @@
-
 import QuoteRequestForm from '@/components/forms/QuoteRequestForm';
 import type { Metadata } from 'next';
 import type { Service } from '@/lib/placeholder-data';
@@ -7,8 +6,8 @@ import { ref, get, child } from "firebase/database";
 import { getDictionary } from '@/lib/i18n/get-dictionary';
 import { i18n, type Locale } from '@/lib/i18n/i18n-config';
 
-export async function generateMetadata({ params }: { params?: { lang?: Locale } }): Promise<Metadata> {
-  const lang = params?.lang || i18n.defaultLocale;
+export async function generateMetadata({ params }: { params: Promise<{ lang: Locale }> }): Promise<Metadata> {
+  const { lang } = await params;
   const dictionary = await getDictionary(lang);
   return {
     title: dictionary.requestQuotePageTitle as string,
@@ -36,8 +35,8 @@ async function getServicesForDropdown(): Promise<Service[]> {
 }
 
 
-export default async function QuoteRequestPage({ params }: { params?: { lang?: Locale } }) {
-  const lang = params?.lang || i18n.defaultLocale;
+export default async function QuoteRequestPage({ params }: { params: Promise<{ lang: Locale }> }) {
+  const { lang } = await params;
   const services = await getServicesForDropdown();
   const dictionary = await getDictionary(lang);
 

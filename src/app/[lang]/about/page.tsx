@@ -1,4 +1,3 @@
-
 import type { Metadata } from 'next';
 import Image from 'next/image';
 import { Users, Target, Eye } from 'lucide-react';
@@ -8,8 +7,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { getSiteContentAction } from '@/components/admin/actions'; // Import the action
 import type { AboutPageContent } from '@/lib/placeholder-data';
 
-export async function generateMetadata({ params }: { params?: { lang?: Locale } }): Promise<Metadata> {
-  const lang = params?.lang || i18n.defaultLocale;
+export async function generateMetadata({ params }: { params: Promise<{ lang: Locale }> }): Promise<Metadata> {
+  const { lang } = await params;
   const siteContent = await getSiteContentAction();
   return {
     title: siteContent.aboutPage.pageTitle[lang] || "About Us",
@@ -17,8 +16,8 @@ export async function generateMetadata({ params }: { params?: { lang?: Locale } 
   };
 }
 
-export default async function AboutUsPage({ params }: { params?: { lang?: Locale } }) {
-  const lang = params?.lang || i18n.defaultLocale;
+export default async function AboutUsPage({ params }: { params: Promise<{ lang: Locale }> }) {
+  const { lang } = await params;
   const dictionary = await getDictionary(lang); // For UI labels if any
   const siteContent = await getSiteContentAction();
   const about = siteContent.aboutPage;

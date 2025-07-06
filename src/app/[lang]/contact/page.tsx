@@ -1,4 +1,3 @@
-
 import type { Metadata } from 'next';
 import { Mail, Phone, MapPin, Send } from 'lucide-react';
 import { getDictionary } from '@/lib/i18n/get-dictionary';
@@ -9,8 +8,8 @@ import Link from 'next/link';
 import { getSiteContentAction } from '@/components/admin/actions';
 import type { ContactPageContent } from '@/lib/placeholder-data';
 
-export async function generateMetadata({ params }: { params?: { lang?: Locale } }): Promise<Metadata> {
-  const lang = params?.lang || i18n.defaultLocale; // Removed await
+export async function generateMetadata({ params }: { params: { lang: Locale } }): Promise<Metadata> {
+  const { lang } = await params; // Added await here
   const siteContent = await getSiteContentAction();
   return {
     title: siteContent.contactPage.pageTitle[lang] || "Contact Us",
@@ -18,8 +17,8 @@ export async function generateMetadata({ params }: { params?: { lang?: Locale } 
   };
 }
 
-export default async function ContactPage({ params }: { params?: { lang?: Locale } }) {
-  const lang = params?.lang || i18n.defaultLocale; // Removed await
+export default async function ContactPage({ params }: { params: { lang: Locale } }) {
+  const { lang } = await params; // Added await here
   const dictionary = await getDictionary(lang); // For static UI elements like button text
   const siteContent = await getSiteContentAction();
   const contact = siteContent.contactPage;
@@ -88,7 +87,7 @@ export default async function ContactPage({ params }: { params?: { lang?: Locale
         <Button asChild size="lg" className="bg-accent hover:bg-accent/90 text-accent-foreground px-8 py-3 text-lg">
           <Link href={`/${lang}/quote-request`}>
             <Send className="mr-2 h-5 w-5" />
-            {dictionary.requestAQuoteNow as string} {/* Using dictionary for button text */}
+            {dictionary.requestAQuoteNow as string} 
           </Link>
         </Button>
       </section>
