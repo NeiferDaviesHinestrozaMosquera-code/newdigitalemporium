@@ -41,8 +41,8 @@ async function getTestimonialsFromDB(): Promise<Testimonial[]> {
   }
 }
 
-export default async function AdminTestimonialsPage({ params }: { params?: { lang?: Locale } }) {
-  const lang = params?.lang || i18n.defaultLocale;
+export default async function AdminTestimonialsPage({ params }: { params: { lang: Locale } }) {
+  const lang = params.lang;
   const testimonials = await getTestimonialsFromDB();
 
   return (

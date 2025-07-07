@@ -1,13 +1,27 @@
 import type { NextConfig } from 'next';
 
 const nextConfig: NextConfig = {
+  /* config options here */
   typescript: {
     ignoreBuildErrors: true,
   },
   eslint: {
     ignoreDuringBuilds: true,
   },
+  
+  // SOLUCIÓN 1: Configurar allowedDevOrigins para el warning de cross-origin
+  allowedDevOrigins: [
+    '172.17.208.1',
+    'localhost',
+    '127.0.0.1',
+    '0.0.0.0'
+  ],
+  
   images: {
+    // SOLUCIÓN 2: Configurar timeouts para las imágenes externas
+    deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048, 3840],
+    imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
+    domains: [], // Deprecated pero mantenemos por compatibilidad
     remotePatterns: [
       {
         protocol: 'https',
@@ -64,8 +78,25 @@ const nextConfig: NextConfig = {
         pathname: '/**',
       }
     ],
+    // SOLUCIÓN 3: Configurar timeouts más largos
+    formats: ['image/webp', 'image/avif'],
+    minimumCacheTTL: 60,
+    dangerouslyAllowSVG: true,
+    contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
   },
-  // CORRECCIÓN: Configuración actualizada
+  
+  // SOLUCIÓN 4: Configurar timeouts del servidor
+  serverRuntimeConfig: {
+    // Aumentar timeouts
+    timeout: 30000,
+  },
+  
+  // Configuración experimental para mejor manejo de imágenes
+  experimental: {
+    // Mejorar el manejo de imágenes remotas
+    optimizePackageImports: ['lucide-react'],
+  },
+  
   serverExternalPackages: [
     '@genkit-ai/googleai',
     '@genkit-ai/next',
@@ -75,6 +106,7 @@ const nextConfig: NextConfig = {
     'handlebars',
     'dotprompt'
   ],
+  
   webpack: (config, { buildId, dev, isServer, defaultLoaders, nextRuntime, webpack }) => {
     config.ignoreWarnings = [
       /Critical dependency: the request of a dependency is an expression/,
@@ -125,7 +157,6 @@ const nextConfig: NextConfig = {
 
     return config;
   },
-
 };
 
 export default nextConfig;

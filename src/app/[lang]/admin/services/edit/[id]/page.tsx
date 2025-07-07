@@ -1,4 +1,3 @@
-
 import ServiceForm from "@/components/admin/services/ServiceForm";
 import type { Service } from "@/lib/placeholder-data";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -12,10 +11,10 @@ import type { Locale } from '@/lib/i18n/i18n-config';
 import { i18n } from '@/lib/i18n/i18n-config';
 
 interface EditServicePageProps {
-  params?: {
+  params: Promise<{
     id?: string;
     lang?: Locale;
-  };
+  }>;
 }
 
 async function getServiceFromDB(id: string): Promise<Service | null> {
@@ -34,8 +33,10 @@ async function getServiceFromDB(id: string): Promise<Service | null> {
 }
 
 export default async function EditServicePage({ params }: EditServicePageProps) {
-  const serviceId = params?.id;
-  const lang = params?.lang || i18n.defaultLocale;
+  // Await the params Promise before accessing its properties
+  const resolvedParams = await params;
+  const serviceId = resolvedParams?.id;
+  const lang = resolvedParams?.lang || i18n.defaultLocale;
 
   if (!serviceId) {
     notFound();

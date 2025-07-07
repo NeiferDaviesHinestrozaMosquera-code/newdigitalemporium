@@ -1,4 +1,3 @@
-
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { iconMap, type Project } from "@/lib/placeholder-data";
@@ -42,8 +41,9 @@ async function getProjectsFromDB(): Promise<Project[]> {
   }
 }
 
-export default async function AdminProjectsPage({ params }: { params?: { lang?: Locale } }) {
-  const lang = params?.lang || i18n.defaultLocale;
+export default async function AdminProjectsPage({ params }: { params?: Promise<{ lang?: Locale }> }) {
+  const resolvedParams = await params;
+  const lang = resolvedParams?.lang || i18n.defaultLocale;
   const projects = await getProjectsFromDB();
 
   return (

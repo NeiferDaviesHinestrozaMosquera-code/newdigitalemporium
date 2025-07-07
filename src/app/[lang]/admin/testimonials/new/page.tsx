@@ -1,4 +1,3 @@
-
 import TestimonialForm from "@/components/admin/testimonials/TestimonialForm";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import Link from "next/link";
@@ -7,8 +6,9 @@ import { Button } from "@/components/ui/button";
 import type { Locale } from '@/lib/i18n/i18n-config';
 import { i18n } from '@/lib/i18n/i18n-config';
 
-export default function NewTestimonialPage({ params }: { params?: { lang?: Locale } }) {
-  const lang = params?.lang || i18n.defaultLocale;
+export default async function NewTestimonialPage({ params }: { params: Promise<{ lang: Locale }> }) {
+  const { lang } = await params;
+  
   return (
     <div className="space-y-6">
       <div className="flex items-center gap-4">
