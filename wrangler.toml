@@ -1,5 +1,6 @@
 name = "newdigitalemporium"
 compatibility_date = "2025-07-03"
+pages_build_output_dir = "out"
 
 [build]
 command = "npm run build"
@@ -10,3 +11,4 @@ watch_dir = "src"
 format = "modules"
 dir = "out"
 main = "./index.js"
+
