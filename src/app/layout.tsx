@@ -6,7 +6,13 @@
 // Our middleware will handle redirecting to a localized path.
 
 import type { ReactNode } from 'react';
+import './globals.css';
 
 export default function RootLayout({ children }: { children: ReactNode }) {
-  return <>{children}</>;
+  return (
+    <html lang="en">
+      <meta name="google-site-verification" content="-BY-Y13C6LfSUxnQEV7AEMDo0WWGmP8Q1ffBSVLy1Zs" />
+      <body>{children}</body>
+    </html>
+  );
 }
