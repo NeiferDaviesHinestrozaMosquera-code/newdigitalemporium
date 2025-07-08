@@ -5,7 +5,9 @@ import { db } from '@/lib/firebase/config'
 import { ref, get, child } from 'firebase/database'
 import type { Service, Project } from '@/lib/placeholder-data'
 
-const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || 'https://your-domain.com';
+//const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || 'https://your-domain.com';
+const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || 'https://newdigitalemporium.vercel.app/';
+
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   // Static pages
