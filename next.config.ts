@@ -1,7 +1,7 @@
 import type { NextConfig } from 'next';
 
 const nextConfig: NextConfig = {
-  /* config options here */
+  // Configuración de desarrollo
   typescript: {
     ignoreBuildErrors: true,
   },
@@ -9,7 +9,7 @@ const nextConfig: NextConfig = {
     ignoreDuringBuilds: true,
   },
   
-  // SOLUCIÓN 1: Configurar allowedDevOrigins para el warning de cross-origin
+  // Configuración de seguridad y acceso
   allowedDevOrigins: [
     '172.17.208.1',
     'localhost',
@@ -17,11 +17,11 @@ const nextConfig: NextConfig = {
     '0.0.0.0'
   ],
   
+  // Configuración de imágenes optimizada
   images: {
-    // SOLUCIÓN 2: Configurar timeouts para las imágenes externas
     deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048, 3840],
     imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
-    domains: [], // Deprecated pero mantenemos por compatibilidad
+    domains: [], // Mantenemos por compatibilidad
     remotePatterns: [
       {
         protocol: 'https',
@@ -78,25 +78,22 @@ const nextConfig: NextConfig = {
         pathname: '/**',
       }
     ],
-    // SOLUCIÓN 3: Configurar timeouts más largos
     formats: ['image/webp', 'image/avif'],
     minimumCacheTTL: 60,
     dangerouslyAllowSVG: true,
-    contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
   },
   
-  // SOLUCIÓN 4: Configurar timeouts del servidor
+  // Configuración del servidor
   serverRuntimeConfig: {
-    // Aumentar timeouts
     timeout: 30000,
   },
   
-  // Configuración experimental para mejor manejo de imágenes
+  // Configuración experimental
   experimental: {
-    // Mejorar el manejo de imágenes remotas
     optimizePackageImports: ['lucide-react'],
   },
   
+  // Paquetes externos del servidor
   serverExternalPackages: [
     '@genkit-ai/googleai',
     '@genkit-ai/next',
@@ -107,12 +104,15 @@ const nextConfig: NextConfig = {
     'dotprompt'
   ],
   
+  // Configuración de webpack
   webpack: (config, { buildId, dev, isServer, defaultLoaders, nextRuntime, webpack }) => {
+    // Ignorar advertencias específicas
     config.ignoreWarnings = [
       /Critical dependency: the request of a dependency is an expression/,
       /require\.extensions is not supported by webpack/,
     ];
 
+    // Configuración del servidor
     if (isServer) {
       config.externals = config.externals || [];
       config.externals.push(
@@ -123,6 +123,7 @@ const nextConfig: NextConfig = {
       );
     }
 
+    // Configuración de resolución
     config.resolve = config.resolve || {};
     config.resolve.fallback = {
       ...config.resolve.fallback,
@@ -140,9 +141,9 @@ const nextConfig: NextConfig = {
       path: false,
     };
 
+    // Reglas adicionales de módulos
     config.module = config.module || {};
     config.module.rules = config.module.rules || [];
-    
     config.module.rules.push({
       test: /\.m?js$/,
       resolve: {
@@ -150,6 +151,7 @@ const nextConfig: NextConfig = {
       },
     });
 
+    // Configuración especial para @opentelemetry
     config.module.rules.push({
       test: /node_modules\/@opentelemetry\/instrumentation\/.*\.js$/,
       use: 'null-loader',
@@ -160,4 +162,3 @@ const nextConfig: NextConfig = {
 };
 
 export default nextConfig;
-
