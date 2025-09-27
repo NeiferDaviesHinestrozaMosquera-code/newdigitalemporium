@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { iconMap, type Project } from "@/lib/placeholder-data";
-import Image from 'next/image';
+import ProjectImage from "@/components/admin/projects/ProjectImage"; // Nuevo componente
 import Link from "next/link";
 import { PlusCircle, Edit, Trash2, ExternalLink, Github } from "lucide-react";
 import { deleteProjectAction } from "@/components/admin/actions";
@@ -46,6 +46,27 @@ export default async function AdminProjectsPage({ params }: { params?: Promise<{
   const lang = resolvedParams?.lang || i18n.defaultLocale;
   const projects = await getProjectsFromDB();
 
+  // 🔍 CÓDIGO DE DEBUG
+  console.log('=== DEBUG: Projects Data ===');
+  console.log('Total projects:', projects.length);
+  console.log('Raw projects data:', projects);
+  
+  projects.forEach((project, index) => {
+    console.log(`\n--- Project ${index + 1}: ${project.title} ---`);
+    console.log('ID:', project.id);
+    console.log('Image URL:', project.image);
+    console.log('Image type:', typeof project.image);
+    console.log('Technologies:', project.technologies);
+    console.log('Technologies type:', typeof project.technologies);
+    console.log('Technologies is array:', Array.isArray(project.technologies));
+    console.log('Category:', project.category);
+    console.log('Client:', project.clientName);
+    console.log('Live Link:', project.liveLink);
+    console.log('Repo Link:', project.repoLink);
+  });
+  console.log('=== END DEBUG ===\n');
+  // 🔍 FIN DEL CÓDIGO DE DEBUG
+
   return (
     <div className="space-y-8">
       <div className="flex items-center justify-between">
@@ -64,31 +85,14 @@ export default async function AdminProjectsPage({ params }: { params?: Promise<{
             return (
               <Card key={project.id} className="shadow-md flex flex-col">
                 <CardHeader className="p-0">
-                  {/* Imagen mejorada con manejo de errores */}
+                  {/* Usar el nuevo componente de imagen */}
                   {project.image && (
-                    <div className="relative w-full h-48 rounded-t-lg overflow-hidden bg-gray-100">
-                      <Image 
-                        src={project.image} 
-                        alt={project.title}
-                        fill
-                        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                        className="object-cover transition-opacity duration-300"
-                        data-ai-hint={project.dataAiHint || 'project image'}
-                        onError={(e) => {
-                          console.error('Image failed to load:', project.image);
-                          // No cambiamos la src aquí para evitar loops infinitos
-                        }}
-                        placeholder="blur"
-                        blurDataURL="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAAIAAoDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAv/xAAhEAACAQMDBQAAAAAAAAAAAAABAgMABAUGIWGRkqGx0f/EABUBAQEAAAAAAAAAAAAAAAAAAAMF/8QAGhEAAgIDAAAAAAAAAAAAAAAAAAECEgMRkf/aAAwDAQACEQMRAD8AltJagyeH0AthI5xdrLcNM91BF5pX2HaH9bcfaSXWGaRmknyJckliyjqTzSlT54b6bk+h0R7+XvLvK5U2DEIbdyZmjQE4x03rJy8cevgDITSa+hV4ePPBXGK+aMqI4FfWjfOT+zWdFEsNalZFTOtJ0RiOSuRj18HZZ3cMrVCkrZFIFHT7qLr5j7w72xzGVi+2xFP2cYTlpNFv5TXhOe76vwA8bKrXIufrYovWRLbpC1BEMhZSu4T1LJFh3nzAD5cYdlKGxmfA=="
-                        priority={false}
-                      />
-                      {/* Overlay para mostrar información adicional */}
-                      <div className="absolute inset-0 bg-black/0 hover:bg-black/20 transition-colors duration-300 flex items-end">
-                        <div className="p-3 text-white opacity-0 hover:opacity-100 transition-opacity duration-300">
-                          <span className="text-xs font-medium">Click to edit</span>
-                        </div>
-                      </div>
-                    </div>
+                    <ProjectImage 
+                      src={project.image}
+                      alt={project.title}
+                      title={project.title}
+                      dataAiHint={project.dataAiHint}
+                    />
                   )}
                   <div className="p-4 pb-2">
                     <div className="flex items-center gap-3 mb-2">
@@ -106,7 +110,7 @@ export default async function AdminProjectsPage({ params }: { params?: Promise<{
                     {project.shortDescription}
                   </p>
                   
-                  {/* Tecnologías */}
+                  {/* Tecnologías con manejo mejorado */}
                   <div>
                     <h4 className="text-xs font-semibold mb-2 text-primary">Technologies:</h4>
                     <div className="flex flex-wrap gap-1.5">
@@ -116,13 +120,15 @@ export default async function AdminProjectsPage({ params }: { params?: Promise<{
                             {tech}
                           </Badge>
                         ))
-                      ) : (
-                        // Fallback si technologies no es un array
-                        project.technologies?.split(',').slice(0, 5).map((tech) => (
+                      ) : typeof project.technologies === 'string' ? (
+                        // Fallback para strings
+                        project.technologies.split(',').slice(0, 5).map((tech) => (
                           <Badge key={tech.trim()} variant="secondary" className="text-xs px-2 py-0.5">
                             {tech.trim()}
                           </Badge>
                         ))
+                      ) : (
+                        <Badge variant="outline" className="text-xs">No technologies</Badge>
                       )}
                     </div>
                   </div>
