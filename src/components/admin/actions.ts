@@ -41,78 +41,110 @@ export async function generateQuoteAction(input: GenerateQuoteActionInputForServ
 }
 
 // Service Actions
-export async function createServiceAction(values: ServiceFormValues) {
-  let newServiceId: string | null = null;
+export async function createProjectAction(values: ProjectFormValues) {
   try {
-    const newServiceRef = push(ref(db, 'services'));
-    newServiceId = newServiceRef.key;
-    if (!newServiceId) throw new Error("Failed to generate service ID from Firebase.");
+    // Procesar tecnologías - convertir string a array
+    const technologiesArray = values.technologies
+      ? values.technologies
+          .split(',')
+          .map(tech => tech.trim())
+          .filter(tech => tech.length > 0)
+      : [];
 
-    const newService: Omit<Service, 'id'> = { 
-      ...values,
-      image: values.image || "https://placehold.co/600x400.png",
+    // Validar y limpiar URL de imagen
+    let imageUrl = values.image?.trim();
+    if (!imageUrl || imageUrl === '') {
+      imageUrl = 'https://placehold.co/600x400/e2e8f0/64748b?text=Project+Image';
+    }
+
+    const projectData = {
+      title: values.title.trim(),
+      shortDescription: values.shortDescription.trim(),
+      description: values.description.trim(),
+      image: imageUrl,
+      dataAiHint: values.dataAiHint?.trim() || '',
+      technologies: technologiesArray,
+      liveLink: values.liveLink?.trim() || '',
+      repoLink: values.repoLink?.trim() || '',
+      clientName: values.clientName?.trim() || '',
+      category: values.category.trim(),
+      iconName: values.iconName,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
     };
-    await set(ref(db, `services/${newServiceId}`), newService);
+
+    console.log('Creating project with data:', projectData);
     
-    revalidatePath("/admin/services");
-    revalidatePath("/[lang]/admin/services", "layout");
-    revalidatePath("/services"); 
-    revalidatePath("/[lang]/services", "layout");
-    revalidatePath("/"); 
-    revalidatePath("/[lang]/", "layout");
-    revalidatePath("/admin");
-    revalidatePath("/[lang]/admin", "layout"); 
-  } catch (error: any) {
-    console.error("Error creating service in Firebase:", error);
-    if (typeof error.digest === 'string' && error.digest.startsWith('NEXT_REDIRECT')) throw error;
-    throw new Error(error.message || "Failed to create service in Firebase.");
-  }
-  if (newServiceId) { // Only redirect if creation was potentially successful before revalidation steps
-    redirect("/admin/services");
-  }
-}
-
-export async function updateServiceAction(id: string, values: ServiceFormValues) {
-  try {
-    const serviceToUpdate: Omit<Service, 'id'> = {
-      ...values,
-      image: values.image || "https://placehold.co/600x400.png",
-    };
-    await set(ref(db, `services/${id}`), serviceToUpdate);
-
-    revalidatePath("/admin/services");
-    revalidatePath("/[lang]/admin/services", "layout");
-    revalidatePath(`/admin/services/edit/${id}`);
-    revalidatePath(`/[lang]/admin/services/edit/${id}`, "layout");
-    revalidatePath("/services");
-    revalidatePath("/[lang]/services", "layout");
-    revalidatePath("/"); 
-    revalidatePath("/[lang]/", "layout");
-    revalidatePath("/admin");
-    revalidatePath("/[lang]/admin", "layout");
-  } catch (error: any) {
-    console.error(`Error updating service ${id} in Firebase:`, error);
-    if (typeof error.digest === 'string' && error.digest.startsWith('NEXT_REDIRECT')) throw error;
-    throw new Error(error.message || `Failed to update service ${id} in Firebase.`);
-  }
-  redirect("/admin/services");
-}
-
-export async function deleteServiceAction(id: string) {
-  try {
-    await remove(ref(db, `services/${id}`));
+    const newProjectRef = await push(ref(db, 'projects'), projectData);
     
-    revalidatePath("/admin/services");
-    revalidatePath("/[lang]/admin/services", "layout");
-    revalidatePath("/services");
-    revalidatePath("/[lang]/services", "layout");
-    revalidatePath("/");
-    revalidatePath("/[lang]/", "layout");
-    revalidatePath("/admin");
-    revalidatePath("/[lang]/admin", "layout");
+    revalidatePath('/admin/projects');
+    redirect('/admin/projects');
   } catch (error) {
-    console.error(`Error deleting service ${id} from Firebase:`, error);
-    throw new Error(error instanceof Error ? error.message : `Failed to delete service ${id} from Firebase.`);
+    console.error('Error creating project:', error);
+    throw new Error('Failed to create project. Please try again.');
+  }
+}
+
+export async function updateProjectAction(id: string, values: ProjectFormValues) {
+  try {
+    if (!id) {
+      throw new Error('Project ID is required');
+    }
+
+    // Procesar tecnologías - convertir string a array
+    const technologiesArray = values.technologies
+      ? values.technologies
+          .split(',')
+          .map(tech => tech.trim())
+          .filter(tech => tech.length > 0)
+      : [];
+
+    // Validar y limpiar URL de imagen
+    let imageUrl = values.image?.trim();
+    if (!imageUrl || imageUrl === '') {
+      imageUrl = 'https://placehold.co/600x400/e2e8f0/64748b?text=Project+Image';
+    }
+
+    const projectData = {
+      title: values.title.trim(),
+      shortDescription: values.shortDescription.trim(),
+      description: values.description.trim(),
+      image: imageUrl,
+      dataAiHint: values.dataAiHint?.trim() || '',
+      technologies: technologiesArray,
+      liveLink: values.liveLink?.trim() || '',
+      repoLink: values.repoLink?.trim() || '',
+      clientName: values.clientName?.trim() || '',
+      category: values.category.trim(),
+      iconName: values.iconName,
+      updatedAt: new Date().toISOString(),
+    };
+
+    console.log('Updating project with data:', projectData);
+    
+    await update(ref(db, `projects/${id}`), projectData);
+    
+    revalidatePath('/admin/projects');
+    revalidatePath(`/admin/projects/edit/${id}`);
+    redirect('/admin/projects');
+  } catch (error) {
+    console.error('Error updating project:', error);
+    throw new Error('Failed to update project. Please try again.');
+  }
+}
+
+export async function deleteProjectAction(id: string) {
+  try {
+    if (!id) {
+      throw new Error('Project ID is required');
+    }
+
+    await remove(ref(db, `projects/${id}`));
+    
+    revalidatePath('/admin/projects');
+  } catch (error) {
+    console.error('Error deleting project:', error);
+    throw new Error('Failed to delete project. Please try again.');
   }
 }
 
