@@ -46,6 +46,27 @@ export default async function AdminProjectsPage({ params }: { params?: Promise<{
   const lang = resolvedParams?.lang || i18n.defaultLocale;
   const projects = await getProjectsFromDB();
 
+  // 🔍 CÓDIGO DE DEBUG - AGREGAR AQUÍ
+  console.log('=== DEBUG: Projects Data ===');
+  console.log('Total projects:', projects.length);
+  console.log('Raw projects data:', projects);
+  
+  projects.forEach((project, index) => {
+    console.log(`\n--- Project ${index + 1}: ${project.title} ---`);
+    console.log('ID:', project.id);
+    console.log('Image URL:', project.image);
+    console.log('Image type:', typeof project.image);
+    console.log('Technologies:', project.technologies);
+    console.log('Technologies type:', typeof project.technologies);
+    console.log('Technologies is array:', Array.isArray(project.technologies));
+    console.log('Category:', project.category);
+    console.log('Client:', project.clientName);
+    console.log('Live Link:', project.liveLink);
+    console.log('Repo Link:', project.repoLink);
+  });
+  console.log('=== END DEBUG ===\n');
+  // 🔍 FIN DEL CÓDIGO DE DEBUG
+
   return (
     <div className="space-y-8">
       <div className="flex items-center justify-between">
@@ -66,7 +87,24 @@ export default async function AdminProjectsPage({ params }: { params?: Promise<{
                 <CardHeader>
                   {project.image && (
                     <div className="relative w-full h-48 mb-4 rounded-t-md overflow-hidden">
-                      <Image src={project.image} alt={project.title} fill={true} style={{objectFit: 'cover'}} data-ai-hint={project.dataAiHint || 'project image'}/>
+                      <Image 
+                        src={project.image} 
+                        alt={project.title} 
+                        fill={true} 
+                        style={{objectFit: 'cover'}} 
+                        data-ai-hint={project.dataAiHint || 'project image'}
+                        onError={(e) => {
+                          console.error(`❌ Image load error for project "${project.title}":`, project.image);
+                          // Opcional: cambiar a imagen de fallback
+                          const target = e.target as HTMLImageElement;
+                          if (!target.src.includes('placehold.co')) {
+                            target.src = 'https://placehold.co/600x400/e2e8f0/64748b?text=Image+Error';
+                          }
+                        }}
+                        onLoad={() => {
+                          console.log(`✅ Image loaded successfully for project "${project.title}":`, project.image);
+                        }}
+                      />
                     </div>
                   )}
                   <div className="flex items-center gap-3 mb-1">
