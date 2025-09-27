@@ -1,4 +1,3 @@
-
 "use server";
 
 import { generateQuote, type GenerateQuoteInput, type GenerateQuoteOutput } from "@/ai/flows/generate-quote";
@@ -40,7 +39,7 @@ export async function generateQuoteAction(input: GenerateQuoteActionInputForServ
   }
 }
 
-// Service Actions
+// Project Actions - VERSIÓN MEJORADA (SOLO UNA VEZ)
 export async function createProjectAction(values: ProjectFormValues) {
   try {
     // Procesar tecnologías - convertir string a array
@@ -78,9 +77,13 @@ export async function createProjectAction(values: ProjectFormValues) {
     const newProjectRef = await push(ref(db, 'projects'), projectData);
     
     revalidatePath('/admin/projects');
+    revalidatePath("/[lang]/admin/projects", "layout");
+    revalidatePath("/projects");
+    revalidatePath("/[lang]/projects", "layout");
     redirect('/admin/projects');
   } catch (error) {
     console.error('Error creating project:', error);
+    if (typeof error?.digest === 'string' && error.digest.startsWith('NEXT_REDIRECT')) throw error;
     throw new Error('Failed to create project. Please try again.');
   }
 }
@@ -125,10 +128,15 @@ export async function updateProjectAction(id: string, values: ProjectFormValues)
     await update(ref(db, `projects/${id}`), projectData);
     
     revalidatePath('/admin/projects');
+    revalidatePath("/[lang]/admin/projects", "layout");
     revalidatePath(`/admin/projects/edit/${id}`);
+    revalidatePath(`/[lang]/admin/projects/edit/${id}`, "layout");
+    revalidatePath("/projects");
+    revalidatePath("/[lang]/projects", "layout");
     redirect('/admin/projects');
   } catch (error) {
     console.error('Error updating project:', error);
+    if (typeof error?.digest === 'string' && error.digest.startsWith('NEXT_REDIRECT')) throw error;
     throw new Error('Failed to update project. Please try again.');
   }
 }
@@ -142,6 +150,11 @@ export async function deleteProjectAction(id: string) {
     await remove(ref(db, `projects/${id}`));
     
     revalidatePath('/admin/projects');
+    revalidatePath("/[lang]/admin/projects", "layout");
+    revalidatePath("/projects");
+    revalidatePath("/[lang]/projects", "layout");
+    revalidatePath("/admin");
+    revalidatePath("/[lang]/admin", "layout");
   } catch (error) {
     console.error('Error deleting project:', error);
     throw new Error('Failed to delete project. Please try again.');
@@ -218,78 +231,6 @@ export async function deleteTestimonialAction(id: string) {
   }
 }
 
-// Project Actions
-export async function createProjectAction(values: ProjectFormValues) {
-  let newProjectId: string | null = null;
-  try {
-    const newProjectRef = push(ref(db, 'projects'));
-    newProjectId = newProjectRef.key;
-    if (!newProjectId) throw new Error("Failed to generate project ID from Firebase.");
-    
-    const newProject: Omit<Project, 'id'> = {
-      ...values,
-      technologies: values.technologies.split(',').map(tech => tech.trim()).filter(tech => tech.length > 0),
-      image: values.image || "https://placehold.co/600x400.png",
-    };
-    await set(ref(db, `projects/${newProjectId}`), newProject);
-    
-    revalidatePath("/admin/projects");
-    revalidatePath("/[lang]/admin/projects", "layout");
-    revalidatePath("/projects");
-    revalidatePath("/[lang]/projects", "layout");
-    revalidatePath("/admin"); 
-    revalidatePath("/[lang]/admin", "layout");
-  } catch (error: any) {
-    console.error("Error creating project in Firebase:", error);
-    if (typeof error.digest === 'string' && error.digest.startsWith('NEXT_REDIRECT')) throw error;
-    throw new Error(error.message || "Failed to create project in Firebase.");
-  }
-  if (newProjectId) {
-    redirect("/admin/projects");
-  }
-}
-
-export async function updateProjectAction(id: string, values: ProjectFormValues) {
-  try {
-    const projectToUpdate: Omit<Project, 'id'> = {
-      ...values,
-      technologies: values.technologies.split(',').map(tech => tech.trim()).filter(tech => tech.length > 0),
-      image: values.image || "https://placehold.co/600x400.png",
-    };
-    await set(ref(db, `projects/${id}`), projectToUpdate);
-
-    revalidatePath("/admin/projects");
-    revalidatePath("/[lang]/admin/projects", "layout");
-    revalidatePath(`/admin/projects/edit/${id}`);
-    revalidatePath(`/[lang]/admin/projects/edit/${id}`, "layout");
-    revalidatePath("/projects");
-    revalidatePath("/[lang]/projects", "layout");
-    revalidatePath("/admin");
-    revalidatePath("/[lang]/admin", "layout");
-  } catch (error: any) {
-    console.error(`Error updating project ${id} in Firebase:`, error);
-    if (typeof error.digest === 'string' && error.digest.startsWith('NEXT_REDIRECT')) throw error;
-    throw new Error(error.message || `Failed to update project ${id} in Firebase.`);
-  }
-  redirect("/admin/projects");
-}
-
-export async function deleteProjectAction(id: string) {
-  try {
-    await remove(ref(db, `projects/${id}`));
-    
-    revalidatePath("/admin/projects");
-    revalidatePath("/[lang]/admin/projects", "layout");
-    revalidatePath("/projects");
-    revalidatePath("/[lang]/projects", "layout");
-    revalidatePath("/admin");
-    revalidatePath("/[lang]/admin", "layout");
-  } catch (error) {
-    console.error(`Error deleting project ${id} from Firebase:`, error);
-    throw new Error(error instanceof Error ? error.message : `Failed to delete project ${id} from Firebase.`);
-  }
-}
-
 // Inquiry Actions
 export async function updateInquiryStatusAction(id: string, status: ClientInquiryStatus) {
   try {
@@ -310,14 +251,14 @@ export async function submitQuoteRequestAction(data: QuoteRequestFormValues): Pr
     const newInquiryId = newInquiryRef.key;
     if (!newInquiryId) throw new Error("Failed to generate inquiry ID from Firebase.");
 
-    const newInquiryData: Omit<ClientInquiry, 'id' | 'generatedQuote'> = { // Ensure generatedQuote is not part of initial creation if not available
+    const newInquiryData: Omit<ClientInquiry, 'id' | 'generatedQuote'> = { 
       name: data.name,
       email: data.email,
       company: data.company || "",
       phoneNumber: data.phoneNumber || "",
       serviceRequested: data.service,
       details: data.projectDetails,
-      date: new Date().toISOString(), // Using client's date, consider serverTimestamp() for Firebase's time
+      date: new Date().toISOString(), 
       status: 'New',
     };
     
@@ -336,7 +277,6 @@ export async function submitQuoteRequestAction(data: QuoteRequestFormValues): Pr
   }
 }
 
-
 // Site Content Actions
 export async function getSiteContentAction(): Promise<SiteContent> {
   try {
@@ -349,7 +289,7 @@ export async function getSiteContentAction(): Promise<SiteContent> {
   } catch (error) {
     console.error("CRITICAL: Firebase Realtime Database read error for '/siteContent/default'.", error);
     console.warn("Firebase: PERMISSION DENIED or other error while fetching site content. Check your Firebase Realtime Database rules for the '/siteContent/default' path to ensure reads are allowed (e.g., '.read': true or '.read': 'auth != null'). Returning local default content to allow page rendering.");
-    return defaultSiteContent; // Return default content on error to prevent page crash
+    return defaultSiteContent; 
   }
 }
 
@@ -362,8 +302,8 @@ export async function updateSiteContentAction(values: SiteContentFormValues): Pr
     revalidatePath("/[lang]/about", "layout");
     revalidatePath("/contact");
     revalidatePath("/[lang]/contact", "layout");
-    revalidatePath("/"); // Footer social links
-    revalidatePath("/[lang]/", "layout"); // Footer social links
+    revalidatePath("/"); 
+    revalidatePath("/[lang]/", "layout"); 
     return { success: true };
   } catch (error: any) {
     console.error("Error updating site content in Firebase:", error);
