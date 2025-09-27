@@ -277,6 +277,76 @@ export async function submitQuoteRequestAction(data: QuoteRequestFormValues): Pr
   }
 }
 
+// Service Actions
+export async function createServiceAction(values: ServiceFormValues) {
+  let newServiceId: string | null = null;
+  try {
+    const newServiceRef = push(ref(db, 'services'));
+    newServiceId = newServiceRef.key;
+    if (!newServiceId) throw new Error("Failed to generate service ID from Firebase.");
+
+    const newService: Omit<Service, 'id'> = {
+      ...values,
+      image: values.image || "https://placehold.co/400x300.png",
+    };
+    await set(ref(db, `services/${newServiceId}`), newService);
+
+    revalidatePath("/admin/services");
+    revalidatePath("/[lang]/admin/services", "layout");
+    revalidatePath("/services");
+    revalidatePath("/[lang]/services", "layout");
+    revalidatePath("/admin");
+    revalidatePath("/[lang]/admin", "layout");
+  } catch (error: any) {
+    console.error("Error creating service in Firebase:", error);
+    if (typeof error.digest === 'string' && error.digest.startsWith('NEXT_REDIRECT')) throw error;
+    throw new Error(error.message || "Failed to create service in Firebase.");
+  }
+  if (newServiceId) {
+    redirect("/admin/services");
+  }
+}
+
+export async function updateServiceAction(id: string, values: ServiceFormValues) {
+  try {
+    const serviceToUpdate: Omit<Service, 'id'> = {
+      ...values,
+      image: values.image || "https://placehold.co/400x300.png",
+    };
+    await set(ref(db, `services/${id}`), serviceToUpdate);
+
+    revalidatePath("/admin/services");
+    revalidatePath("/[lang]/admin/services", "layout");
+    revalidatePath(`/admin/services/edit/${id}`);
+    revalidatePath(`/[lang]/admin/services/edit/${id}`, "layout");
+    revalidatePath("/services");
+    revalidatePath("/[lang]/services", "layout");
+    revalidatePath("/admin");
+    revalidatePath("/[lang]/admin", "layout");
+  } catch (error: any) {
+    console.error(`Error updating service ${id} in Firebase:`, error);
+    if (typeof error.digest === 'string' && error.digest.startsWith('NEXT_REDIRECT')) throw error;
+    throw new Error(error.message || `Failed to update service ${id} in Firebase.`);
+  }
+  redirect("/admin/services");
+}
+
+export async function deleteServiceAction(id: string) {
+  try {
+    await remove(ref(db, `services/${id}`));
+    
+    revalidatePath("/admin/services");
+    revalidatePath("/[lang]/admin/services", "layout");
+    revalidatePath("/services");
+    revalidatePath("/[lang]/services", "layout");
+    revalidatePath("/admin");
+    revalidatePath("/[lang]/admin", "layout");
+  } catch (error) {
+    console.error(`Error deleting service ${id} from Firebase:`, error);
+    throw new Error(error instanceof Error ? error.message : `Failed to delete service ${id} from Firebase.`);
+  }
+}
+
 // Site Content Actions
 export async function getSiteContentAction(): Promise<SiteContent> {
   try {
