@@ -46,27 +46,6 @@ export default async function AdminProjectsPage({ params }: { params?: Promise<{
   const lang = resolvedParams?.lang || i18n.defaultLocale;
   const projects = await getProjectsFromDB();
 
-  // 🔍 CÓDIGO DE DEBUG - AGREGAR AQUÍ
-  console.log('=== DEBUG: Projects Data ===');
-  console.log('Total projects:', projects.length);
-  console.log('Raw projects data:', projects);
-  
-  projects.forEach((project, index) => {
-    console.log(`\n--- Project ${index + 1}: ${project.title} ---`);
-    console.log('ID:', project.id);
-    console.log('Image URL:', project.image);
-    console.log('Image type:', typeof project.image);
-    console.log('Technologies:', project.technologies);
-    console.log('Technologies type:', typeof project.technologies);
-    console.log('Technologies is array:', Array.isArray(project.technologies));
-    console.log('Category:', project.category);
-    console.log('Client:', project.clientName);
-    console.log('Live Link:', project.liveLink);
-    console.log('Repo Link:', project.repoLink);
-  });
-  console.log('=== END DEBUG ===\n');
-  // 🔍 FIN DEL CÓDIGO DE DEBUG
-
   return (
     <div className="space-y-8">
       <div className="flex items-center justify-between">
@@ -84,104 +63,141 @@ export default async function AdminProjectsPage({ params }: { params?: Promise<{
             const IconComponent = iconMap[project.iconName] || iconMap['Layers'];
             return (
               <Card key={project.id} className="shadow-md flex flex-col">
-                <CardHeader>
+                <CardHeader className="p-0">
+                  {/* Imagen mejorada con manejo de errores */}
                   {project.image && (
-                    <div className="relative w-full h-48 mb-4 rounded-t-md overflow-hidden">
+                    <div className="relative w-full h-48 rounded-t-lg overflow-hidden bg-gray-100">
                       <Image 
                         src={project.image} 
-                        alt={project.title} 
-                        fill={true} 
-                        style={{objectFit: 'cover'}} 
+                        alt={project.title}
+                        fill
+                        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                        className="object-cover transition-opacity duration-300"
                         data-ai-hint={project.dataAiHint || 'project image'}
                         onError={(e) => {
-                          console.error(`❌ Image load error for project "${project.title}":`, project.image);
-                          // Opcional: cambiar a imagen de fallback
-                          const target = e.target as HTMLImageElement;
-                          if (!target.src.includes('placehold.co')) {
-                            target.src = 'https://placehold.co/600x400/e2e8f0/64748b?text=Image+Error';
-                          }
+                          console.error('Image failed to load:', project.image);
+                          // No cambiamos la src aquí para evitar loops infinitos
                         }}
-                        onLoad={() => {
-                          console.log(`✅ Image loaded successfully for project "${project.title}":`, project.image);
-                        }}
+                        placeholder="blur"
+                        blurDataURL="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAAIAAoDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAv/xAAhEAACAQMDBQAAAAAAAAAAAAABAgMABAUGIWGRkqGx0f/EABUBAQEAAAAAAAAAAAAAAAAAAAMF/8QAGhEAAgIDAAAAAAAAAAAAAAAAAAECEgMRkf/aAAwDAQACEQMRAD8AltJagyeH0AthI5xdrLcNM91BF5pX2HaH9bcfaSXWGaRmknyJckliyjqTzSlT54b6bk+h0R7+XvLvK5U2DEIbdyZmjQE4x03rJy8cevgDITSa+hV4ePPBXGK+aMqI4FfWjfOT+zWdFEsNalZFTOtJ0RiOSuRj18HZZ3cMrVCkrZFIFHT7qLr5j7w72xzGVi+2xFP2cYTlpNFv5TXhOe76vwA8bKrXIufrYovWRLbpC1BEMhZSu4T1LJFh3nzAD5cYdlKGxmfA=="
+                        priority={false}
                       />
+                      {/* Overlay para mostrar información adicional */}
+                      <div className="absolute inset-0 bg-black/0 hover:bg-black/20 transition-colors duration-300 flex items-end">
+                        <div className="p-3 text-white opacity-0 hover:opacity-100 transition-opacity duration-300">
+                          <span className="text-xs font-medium">Click to edit</span>
+                        </div>
+                      </div>
                     </div>
                   )}
-                  <div className="flex items-center gap-3 mb-1">
-                    <IconComponent className="w-6 h-6 text-primary" />
-                    <CardTitle className="text-lg">{project.title}</CardTitle>
+                  <div className="p-4 pb-2">
+                    <div className="flex items-center gap-3 mb-2">
+                      <IconComponent className="w-6 h-6 text-primary" />
+                      <CardTitle className="text-lg font-semibold">{project.title}</CardTitle>
+                    </div>
+                    <CardDescription className="text-sm text-muted-foreground">
+                      {project.category} {project.clientName && `- Client: ${project.clientName}`}
+                    </CardDescription>
                   </div>
-                  <CardDescription className="text-xs text-muted-foreground">{project.category} {project.clientName && `- Client: ${project.clientName}`}</CardDescription>
                 </CardHeader>
-                <CardContent className="flex-grow space-y-3">
-                  <p className="text-sm text-muted-foreground line-clamp-3">{project.shortDescription}</p>
+                
+                <CardContent className="flex-grow space-y-3 px-4">
+                  <p className="text-sm text-muted-foreground line-clamp-3 leading-relaxed">
+                    {project.shortDescription}
+                  </p>
+                  
+                  {/* Tecnologías */}
                   <div>
-                    <h4 className="text-xs font-semibold mb-1">Technologies:</h4>
+                    <h4 className="text-xs font-semibold mb-2 text-primary">Technologies:</h4>
                     <div className="flex flex-wrap gap-1.5">
-                      {Array.isArray(project.technologies) && project.technologies.map((tech) => (
-                        <Badge key={tech} variant="secondary" className="text-xs">{tech}</Badge>
-                      ))}
+                      {Array.isArray(project.technologies) ? (
+                        project.technologies.slice(0, 5).map((tech) => (
+                          <Badge key={tech} variant="secondary" className="text-xs px-2 py-0.5">
+                            {tech}
+                          </Badge>
+                        ))
+                      ) : (
+                        // Fallback si technologies no es un array
+                        project.technologies?.split(',').slice(0, 5).map((tech) => (
+                          <Badge key={tech.trim()} variant="secondary" className="text-xs px-2 py-0.5">
+                            {tech.trim()}
+                          </Badge>
+                        ))
+                      )}
                     </div>
                   </div>
                 </CardContent>
-                <CardFooter className="flex flex-col items-start gap-3 border-t pt-4 mt-auto">
-                    <div className="flex gap-2">
-                        {project.liveLink && (
-                            <Button variant="outline" size="sm" asChild className="text-xs">
-                                <Link href={project.liveLink} target="_blank" rel="noopener noreferrer">
-                                <ExternalLink className="mr-1.5 h-3.5 w-3.5" /> Live
-                                </Link>
-                            </Button>
-                        )}
-                        {project.repoLink && (
-                            <Button variant="outline" size="sm" asChild className="text-xs">
-                                <Link href={project.repoLink} target="_blank" rel="noopener noreferrer">
-                                <Github className="mr-1.5 h-3.5 w-3.5" /> Repo
-                                </Link>
-                            </Button>
-                        )}
-                    </div>
-                    <div className="flex justify-end gap-2 w-full">
-                        <Button variant="outline" size="sm" asChild>
-                            <Link href={`/${lang}/admin/projects/edit/${project.id}`}>
-                            <Edit className="h-4 w-4" />
-                            </Link>
+                
+                <CardFooter className="flex flex-col items-start gap-3 border-t pt-4 mt-auto px-4 pb-4">
+                  <div className="flex gap-2 w-full">
+                    {project.liveLink && (
+                      <Button variant="outline" size="sm" asChild className="text-xs flex-1">
+                        <Link href={project.liveLink} target="_blank" rel="noopener noreferrer">
+                          <ExternalLink className="mr-1.5 h-3.5 w-3.5" /> Live
+                        </Link>
+                      </Button>
+                    )}
+                    {project.repoLink && (
+                      <Button variant="outline" size="sm" asChild className="text-xs flex-1">
+                        <Link href={project.repoLink} target="_blank" rel="noopener noreferrer">
+                          <Github className="mr-1.5 h-3.5 w-3.5" /> Repo
+                        </Link>
+                      </Button>
+                    )}
+                  </div>
+                  
+                  <div className="flex justify-end gap-2 w-full">
+                    <Button variant="outline" size="sm" asChild>
+                      <Link href={`/${lang}/admin/projects/edit/${project.id}`}>
+                        <Edit className="h-4 w-4" />
+                      </Link>
+                    </Button>
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <Button variant="destructive" size="sm">
+                          <Trash2 className="h-4 w-4" />
                         </Button>
-                        <AlertDialog>
-                            <AlertDialogTrigger asChild>
-                            <Button variant="destructive" size="sm">
-                                <Trash2 className="h-4 w-4" />
-                            </Button>
-                            </AlertDialogTrigger>
-                            <AlertDialogContent>
-                            <AlertDialogHeader>
-                                <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-                                <AlertDialogDescription>
-                                This action cannot be undone. This will permanently delete the project from Firebase.
-                                </AlertDialogDescription>
-                            </AlertDialogHeader>
-                            <AlertDialogFooter>
-                                <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                <form action={async () => {
-                                "use server";
-                                if (!project.id) return;
-                                await deleteProjectAction(project.id);
-                                }}>
-                                <AlertDialogAction type="submit">Delete</AlertDialogAction>
-                                </form>
-                            </AlertDialogFooter>
-                            </AlertDialogContent>
-                        </AlertDialog>
-                    </div>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                          <AlertDialogDescription>
+                            This action cannot be undone. This will permanently delete the project "{project.title}" from Firebase.
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>Cancel</AlertDialogCancel>
+                          <form action={async () => {
+                            "use server";
+                            if (!project.id) return;
+                            await deleteProjectAction(project.id);
+                          }}>
+                            <AlertDialogAction type="submit">Delete</AlertDialogAction>
+                          </form>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
+                  </div>
                 </CardFooter>
               </Card>
             );
           })}
         </div>
-        ) : (
+      ) : (
         <Card>
-          <CardContent className="p-6 text-center text-muted-foreground">
-            No projects found. Add your first project!
+          <CardContent className="p-8 text-center text-muted-foreground">
+            <div className="flex flex-col items-center gap-4">
+              <PlusCircle className="h-16 w-16 text-muted-foreground/50" />
+              <div>
+                <h3 className="text-lg font-semibold mb-2">No projects found</h3>
+                <p className="text-sm">Add your first project to get started!</p>
+              </div>
+              <Button asChild className="mt-2">
+                <Link href={`/${lang}/admin/projects/new`}>
+                  Add New Project
+                </Link>
+              </Button>
+            </div>
           </CardContent>
         </Card>
       )}
