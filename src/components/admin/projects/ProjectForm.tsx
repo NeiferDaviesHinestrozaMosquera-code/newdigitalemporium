@@ -23,7 +23,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
-import { createProjectAction, updateProjectAction } from "@/components/admin/actions";
+import { createProjectAction, updateProjectAction } from "@/components/admin/project-actions";
 import type { Project } from "@/lib/placeholder-data";
 import { allIconNames } from "@/lib/placeholder-data";
 import { ProjectFormSchema, type ProjectFormValues } from "@/lib/schemas";
@@ -47,9 +47,9 @@ export default function ProjectForm({ initialData, formAction, dictionary }: Pro
     title: initialData?.title || "",
     shortDescription: initialData?.shortDescription || "",
     description: initialData?.description || "",
-    images: initialData?.images?.join('\n') || "", // Join array for textarea
+    images: Array.isArray(initialData?.images) ? initialData.images.join('\n') : "",
     dataAiHint: initialData?.dataAiHint || "",
-    technologies: initialData?.technologies?.join(', ') || "",
+    technologies: Array.isArray(initialData?.technologies) ? initialData.technologies.join(', ') : "",
     liveLink: initialData?.liveLink || "",
     repoLink: initialData?.repoLink || "",
     clientName: initialData?.clientName || "",
@@ -60,7 +60,7 @@ export default function ProjectForm({ initialData, formAction, dictionary }: Pro
   const form = useForm<ProjectFormValues>({
     resolver: zodResolver(ProjectFormSchema),
     defaultValues,
-    mode: "onChange", // Validate on change to give user feedback for URLs
+    mode: "onChange", 
   });
 
   React.useEffect(() => {
@@ -70,20 +70,27 @@ export default function ProjectForm({ initialData, formAction, dictionary }: Pro
   async function onSubmit(values: ProjectFormValues) {
     setIsSubmitting(true);
     try {
+      let actionPromise;
       if (formAction === "create") {
-        await createProjectAction(values);
+        actionPromise = createProjectAction(values);
         toast({
           title: dictionary.projectCreatedSuccessTitle,
           description: dictionary.projectCreatedSuccessDescription,
         });
       } else if (formAction === "update" && initialData?.id) {
-        await updateProjectAction(initialData.id, values);
+        actionPromise = updateProjectAction(initialData.id, values);
         toast({
           title: dictionary.projectUpdatedSuccessTitle,
           description: dictionary.projectUpdatedSuccessDescription,
         });
+      } else {
+        throw new Error("Invalid form action or missing project ID.");
       }
+      await actionPromise;
+      // No redirect here, handled by server action
     } catch (error: any) {
+      console.error("Form submission error:", error);
+      // Server actions that redirect throw a special error, don't show a toast for it.
       if (error.digest?.startsWith('NEXT_REDIRECT')) {
         throw error;
       }
@@ -211,7 +218,7 @@ export default function ProjectForm({ initialData, formAction, dictionary }: Pro
           render={({ field }) => (
             <FormItem>
               <FormLabel>{dictionary.projectFormLabelIcon}</FormLabel>
-              <Select onValuechange={field.onChange} defaultValue={field.value}>
+              <Select onValueChange={field.onChange} defaultValue={field.value}>
                 <FormControl>
                   <SelectTrigger>
                     <SelectValue placeholder={dictionary.projectFormPlaceholderIcon} />

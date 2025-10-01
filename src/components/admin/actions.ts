@@ -1,14 +1,13 @@
 "use server";
 
 import { generateQuote, type GenerateQuoteInput, type GenerateQuoteOutput } from "@/ai/flows/generate-quote";
-import type { ClientInquiryStatus, ClientInquiry, Service, Testimonial, Project, SiteContent } from "@/lib/placeholder-data";
-import { defaultSiteContent } from "@/lib/placeholder-data"; // Import default
-import type { ServiceFormValues, TestimonialFormValues, QuoteRequestFormValues, ProjectFormValues, SiteContentFormValues } from "@/lib/schemas";
+import type { ClientInquiryStatus, ClientInquiry, Service, Testimonial, SiteContent } from "@/lib/placeholder-data";
+import { defaultSiteContent } from "@/lib/placeholder-data";
+import type { ServiceFormValues, TestimonialFormValues, QuoteRequestFormValues, SiteContentFormValues } from "@/lib/schemas";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { db } from "@/lib/firebase/config";
-import { ref, set, get, child, update, remove, push, serverTimestamp } from "firebase/database";
-import { v4 as uuidv4 } from 'uuid';
+import { ref, set, get, child, update, remove, push } from "firebase/database";
 
 interface GenerateQuoteActionInputForServer extends GenerateQuoteInput {
   inquiryId: string;
@@ -36,105 +35,6 @@ export async function generateQuoteAction(input: GenerateQuoteActionInputForServ
         throw new Error(`AI Quote Generation Failed: ${error.message}`);
     }
     throw new Error("An unexpected error occurred during AI quote generation.");
-  }
-}
-
-// Project Actions
-export async function createProjectAction(values: ProjectFormValues) {
-  try {
-    // Technologies are passed as a comma-separated string, convert to array
-    const technologiesArray = values.technologies
-      .split(',')
-      .map(tech => tech.trim())
-      .filter(Boolean);
-
-    const projectData = {
-      title: values.title.trim(),
-      shortDescription: values.shortDescription.trim(),
-      description: values.description.trim(),
-      images: values.images, // Already an array of URLs from the schema
-      dataAiHint: values.dataAiHint?.trim() || '',
-      technologies: technologiesArray,
-      liveLink: values.liveLink?.trim() || '',
-      repoLink: values.repoLink?.trim() || '',
-      clientName: values.clientName?.trim() || '',
-      category: values.category.trim(),
-      iconName: values.iconName,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    };
-
-    await push(ref(db, 'projects'), projectData);
-    
-    revalidatePath('/admin/projects');
-    revalidatePath('/[lang]/admin/projects', 'layout');
-    revalidatePath('/projects');
-    revalidatePath('/[lang]/projects', 'layout');
-    redirect('/admin/projects');
-  } catch (error) {
-    console.error('Error creating project:', error);
-    if (typeof error?.digest === 'string' && error.digest.startsWith('NEXT_REDIRECT')) throw error;
-    throw new Error('Failed to create project. Please try again.');
-  }
-}
-
-export async function updateProjectAction(id: string, values: ProjectFormValues) {
-  try {
-    if (!id) {
-      throw new Error('Project ID is required');
-    }
-
-    const technologiesArray = values.technologies
-      .split(',')
-      .map(tech => tech.trim())
-      .filter(Boolean);
-
-    const projectData = {
-      title: values.title.trim(),
-      shortDescription: values.shortDescription.trim(),
-      description: values.description.trim(),
-      images: values.images, // Already an array of URLs from the schema
-      dataAiHint: values.dataAiHint?.trim() || '',
-      technologies: technologiesArray,
-      liveLink: values.liveLink?.trim() || '',
-      repoLink: values.repoLink?.trim() || '',
-      clientName: values.clientName?.trim() || '',
-      category: values.category.trim(),
-      iconName: values.iconName,
-      updatedAt: new Date().toISOString(),
-    };
-
-    await update(ref(db, `projects/${id}`), projectData);
-    
-    revalidatePath('/admin/projects');
-    revalidatePath('/[lang]/admin/projects', 'layout');
-    revalidatePath(`/admin/projects/edit/${id}`);
-    revalidatePath(`/[lang]/admin/projects/edit/${id}`, 'layout');
-    revalidatePath('/projects');
-    revalidatePath('/[lang]/projects', 'layout');
-    redirect('/admin/projects');
-  } catch (error) {
-    console.error('Error updating project:', error);
-    if (typeof error?.digest === 'string' && error.digest.startsWith('NEXT_REDIRECT')) throw error;
-    throw new Error('Failed to update project. Please try again.');
-  }
-}
-
-export async function deleteProjectAction(id: string) {
-  try {
-    if (!id) {
-      throw new Error('Project ID is required');
-    }
-
-    await remove(ref(db, `projects/${id}`));
-    
-    revalidatePath('/admin/projects');
-    revalidatePath('/[lang]/admin/projects', 'layout');
-    revalidatePath('/projects');
-    revalidatePath('/[lang]/projects', 'layout');
-  } catch (error) {
-    console.error('Error deleting project:', error);
-    throw new Error('Failed to delete project. Please try again.');
   }
 }
 
