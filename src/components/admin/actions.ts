@@ -293,19 +293,19 @@ export async function deleteServiceAction(id: string) {
     await remove(ref(db, `services/${id}`));
     
     revalidatePath("/admin/services");
-    revalidatePath("/[lang]/admin/services", "layout
+    revalidatePath("/[lang]/admin/services", "layout");
     revalidatePath("/services");
     revalidatePath("/[lang]/services", "layout");
   } catch (error) {
     console.error(`Error deleting service ${id}:`, error);
-    throw new Error(error instanceof Error ? error.message : `Failed to delete service.`);
+    throw new Error(error instanceof Error ? error.message : \`Failed to delete service.\`);
   }
 }
 
 // Site Content Actions
 export async function getSiteContentAction(): Promise<SiteContent> {
   try {
-    const snapshot = await get(child(ref(db), `siteContent/default`));
+    const snapshot = await get(child(ref(db), \`siteContent/default\`));
     if (snapshot.exists()) {
       return snapshot.val() as SiteContent;
     }
@@ -320,7 +320,7 @@ export async function getSiteContentAction(): Promise<SiteContent> {
 
 export async function updateSiteContentAction(values: SiteContentFormValues): Promise<{success: boolean, error?: string}> {
   try {
-    await set(ref(db, `siteContent/default`), values);
+    await set(ref(db, \`siteContent/default\`), values);
     revalidatePath("/admin/site-settings");
     revalidatePath("/[lang]/admin/site-settings", "layout");
     revalidatePath("/about");
