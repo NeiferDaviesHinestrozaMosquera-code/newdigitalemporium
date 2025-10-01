@@ -37,7 +37,29 @@ export const ProjectFormSchema = z.object({
   title: z.string().min(3, "Title must be at least 3 characters long."),
   shortDescription: z.string().min(10, "Short description must be at least 10 characters long."),
   description: z.string().min(20, "Full description must be at least 20 characters long."),
-  image: z.string().url("Image URL must be a valid URL.").or(z.literal("").default("https://placehold.co/600x400.png")),
+  // Accept a string of URLs, then transform it into an array of validated URLs.
+  images: z.string()
+    .min(1, "At least one image URL is required.")
+    .transform((str, ctx) => {
+      const urls = str.split(/[\n,]+/).map(url => url.trim()).filter(Boolean);
+      try {
+        const validatedUrls = z.array(z.string().url()).parse(urls);
+        if (validatedUrls.length === 0) {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            message: "Please provide at least one valid URL.",
+          });
+          return z.NEVER;
+        }
+        return validatedUrls;
+      } catch (error) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "One or more URLs are invalid.",
+        });
+        return z.NEVER;
+      }
+    }),
   dataAiHint: z.string().max(50, "AI hint for image is too long (max 50 chars).").optional().default(""),
   technologies: z.string().min(1, "Please list at least one technology (comma-separated)."), 
   liveLink: z.string().url("Live link must be a valid URL.").optional().or(z.literal("")),
@@ -115,5 +137,3 @@ export const SiteContentFormSchema = z.object({
   socialLinks: z.array(SocialLinkSchema).max(10, "Maximum of 10 social links allowed."),
 });
 export type SiteContentFormValues = z.infer<typeof SiteContentFormSchema>;
-
-    

@@ -82,7 +82,7 @@ export interface Project {
   title: string;
   shortDescription: string;
   description: string;
-  image: string;
+  images: string[]; // Changed from image: string
   dataAiHint: string;
   technologies: string[];
   liveLink?: string;
@@ -163,7 +163,7 @@ export const defaultSiteContent: SiteContent = {
     section1ImageURL: "https://placehold.co/800x600.png?text=Our+Team",
     section1ImageHint: "team collaboration",
     section1Heading: { en: "Welcome to Digital Emporium!", es: "¡Bienvenido a Digital Emporium!", fr: "Bienvenue chez Digital Emporium !" },
-    section1Paragraph1: { en: "We are a passionate team of developers, designers, and AI specialists dedicated to crafting innovative digital solutions that empower businesses and bring creative visions to life.", es: "Somos un equipo apasionado de desarrolladores, diseñadores y especialistas en IA dedicados a crear soluciones digitales innovadoras que potencian a las empresas y dan vida a visiones creativas.", fr: "Nous sommes une équipe passionnée de développeurs, designers et spécialistes en IA dédiés à la création de solutions numériques innovantes qui autonomisent les entreprises et donnent vie aux visions créatives." },
+    section1Paragraph1: { en: "We are a passionate team of developers, designers, and AI specialists dedicated to crafting innovative digital solutions that empower businesses and bring creative visions to life.", es: "Somos un equipo apasionado de desarrolladores, diseñadores y especialistas en IA dedicados a crear soluciones digitales innovadoras que potencian a las empresas y dan vida a visiones creativas.", fr: "Nous sommes une équipe passionnée de développeurs, designers et spécialistes en IA dédiés à la création de solutions numériques innovantes qui autonomisent les entreprises et donnent vie aux visions créatrices." },
     section1Paragraph2: { en: "Our expertise spans across web development, mobile app creation, bespoke AI agents, and strategic digital consulting. We believe in the transformative power of technology.", es: "Nuestra experiencia abarca el desarrollo web, la creación de aplicaciones móviles, agentes de IA a medida y consultoría digital estratégica. Creemos en el poder transformador de la tecnología.", fr: "Notre expertise couvre le développement web, la création d'applications mobiles, les agents IA sur mesure et le conseil stratégique numérique. Nous croyons au pouvoir transformateur de la technologie." },
     missionHeading: { en: "Our Mission", es: "Nuestra Misión", fr: "Notre Mission" },
     missionText: { en: "To empower businesses with innovative and tailored digital solutions that drive growth, enhance engagement, and create lasting value.", es: "Empoderar a las empresas con soluciones digitales innovadoras y personalizadas que impulsan el crecimiento, mejoran el compromiso y crean valor duradero.", fr: "Donner aux entreprises les moyens de développer des solutions numériques innovantes et sur mesure qui stimulent la croissance, améliorent l'engagement et créent une valeur durable." },
@@ -184,7 +184,7 @@ export const defaultSiteContent: SiteContent = {
     phoneValue: "+1 (555) 123-4567",
     addressLabel: { en: "Visit Us", es: "Visítanos", fr: "Rendez-Nous Visite" },
     addressValue: { en: "123 Digital Avenue, Tech City, TC 54321, Innovation Land", es: "Avenida Digital 123, Ciudad Tecnológica, TC 54321, Tierra de Innovación", fr: "123 Avenue Numérique, Ville Tech, TC 54321, Pays de l'Innovation" },
-    ctaHeading: { en: "Ready to Start?", es: "¿Listo para Empezar?", fr: "Prêt à Commencer ?" },
+    ctaHeading: { en: "Ready to Start?", es: "Estar listo para empezar?", fr: "Prêt à Commencer ?" },
     ctaDescription: { en: "Reach out to discuss your project and get a personalized quote.", es: "Contáctanos para discutir tu proyecto y obtener una cotización personalizada.", fr: "Contactez-nous pour discuter de votre projet et obtenir un devis personnalisé." }
   },
   socialLinks: [
@@ -193,5 +193,3 @@ export const defaultSiteContent: SiteContent = {
     { id: "3", name: "Twitter", href: "https://twitter.com", iconName: "Twitter" },
   ]
 };
-
-    

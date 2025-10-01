@@ -39,28 +39,20 @@ export async function generateQuoteAction(input: GenerateQuoteActionInputForServ
   }
 }
 
-// Project Actions - VERSIÓN MEJORADA (SOLO UNA VEZ)
+// Project Actions
 export async function createProjectAction(values: ProjectFormValues) {
   try {
-    // Procesar tecnologías - convertir string a array
+    // Technologies are passed as a comma-separated string, convert to array
     const technologiesArray = values.technologies
-      ? values.technologies
-          .split(',')
-          .map(tech => tech.trim())
-          .filter(tech => tech.length > 0)
-      : [];
-
-    // Validar y limpiar URL de imagen
-    let imageUrl = values.image?.trim();
-    if (!imageUrl || imageUrl === '') {
-      imageUrl = 'https://placehold.co/600x400/e2e8f0/64748b?text=Project+Image';
-    }
+      .split(',')
+      .map(tech => tech.trim())
+      .filter(Boolean);
 
     const projectData = {
       title: values.title.trim(),
       shortDescription: values.shortDescription.trim(),
       description: values.description.trim(),
-      image: imageUrl,
+      images: values.images, // Already an array of URLs from the schema
       dataAiHint: values.dataAiHint?.trim() || '',
       technologies: technologiesArray,
       liveLink: values.liveLink?.trim() || '',
@@ -72,14 +64,12 @@ export async function createProjectAction(values: ProjectFormValues) {
       updatedAt: new Date().toISOString(),
     };
 
-    console.log('Creating project with data:', projectData);
-    
-    const newProjectRef = await push(ref(db, 'projects'), projectData);
+    await push(ref(db, 'projects'), projectData);
     
     revalidatePath('/admin/projects');
-    revalidatePath("/[lang]/admin/projects", "layout");
-    revalidatePath("/projects");
-    revalidatePath("/[lang]/projects", "layout");
+    revalidatePath('/[lang]/admin/projects', 'layout');
+    revalidatePath('/projects');
+    revalidatePath('/[lang]/projects', 'layout');
     redirect('/admin/projects');
   } catch (error) {
     console.error('Error creating project:', error);
@@ -94,25 +84,16 @@ export async function updateProjectAction(id: string, values: ProjectFormValues)
       throw new Error('Project ID is required');
     }
 
-    // Procesar tecnologías - convertir string a array
     const technologiesArray = values.technologies
-      ? values.technologies
-          .split(',')
-          .map(tech => tech.trim())
-          .filter(tech => tech.length > 0)
-      : [];
-
-    // Validar y limpiar URL de imagen
-    let imageUrl = values.image?.trim();
-    if (!imageUrl || imageUrl === '') {
-      imageUrl = 'https://placehold.co/600x400/e2e8f0/64748b?text=Project+Image';
-    }
+      .split(',')
+      .map(tech => tech.trim())
+      .filter(Boolean);
 
     const projectData = {
       title: values.title.trim(),
       shortDescription: values.shortDescription.trim(),
       description: values.description.trim(),
-      image: imageUrl,
+      images: values.images, // Already an array of URLs from the schema
       dataAiHint: values.dataAiHint?.trim() || '',
       technologies: technologiesArray,
       liveLink: values.liveLink?.trim() || '',
@@ -123,16 +104,14 @@ export async function updateProjectAction(id: string, values: ProjectFormValues)
       updatedAt: new Date().toISOString(),
     };
 
-    console.log('Updating project with data:', projectData);
-    
     await update(ref(db, `projects/${id}`), projectData);
     
     revalidatePath('/admin/projects');
-    revalidatePath("/[lang]/admin/projects", "layout");
+    revalidatePath('/[lang]/admin/projects', 'layout');
     revalidatePath(`/admin/projects/edit/${id}`);
-    revalidatePath(`/[lang]/admin/projects/edit/${id}`, "layout");
-    revalidatePath("/projects");
-    revalidatePath("/[lang]/projects", "layout");
+    revalidatePath(`/[lang]/admin/projects/edit/${id}`, 'layout');
+    revalidatePath('/projects');
+    revalidatePath('/[lang]/projects', 'layout');
     redirect('/admin/projects');
   } catch (error) {
     console.error('Error updating project:', error);
@@ -150,11 +129,9 @@ export async function deleteProjectAction(id: string) {
     await remove(ref(db, `projects/${id}`));
     
     revalidatePath('/admin/projects');
-    revalidatePath("/[lang]/admin/projects", "layout");
-    revalidatePath("/projects");
-    revalidatePath("/[lang]/projects", "layout");
-    revalidatePath("/admin");
-    revalidatePath("/[lang]/admin", "layout");
+    revalidatePath('/[lang]/admin/projects', 'layout');
+    revalidatePath('/projects');
+    revalidatePath('/[lang]/projects', 'layout');
   } catch (error) {
     console.error('Error deleting project:', error);
     throw new Error('Failed to delete project. Please try again.');
@@ -163,11 +140,10 @@ export async function deleteProjectAction(id: string) {
 
 // Testimonial Actions
 export async function createTestimonialAction(values: TestimonialFormValues) {
-  let newTestimonialId: string | null = null;
   try {
     const newTestimonialRef = push(ref(db, 'testimonials'));
-    newTestimonialId = newTestimonialRef.key;
-    if (!newTestimonialId) throw new Error("Failed to generate testimonial ID from Firebase.");
+    const newTestimonialId = newTestimonialRef.key;
+    if (!newTestimonialId) throw new Error("Failed to generate testimonial ID.");
 
     const newTestimonial: Omit<Testimonial, 'id'> = {
       ...values,
@@ -177,18 +153,14 @@ export async function createTestimonialAction(values: TestimonialFormValues) {
 
     revalidatePath("/admin/testimonials");
     revalidatePath("/[lang]/admin/testimonials", "layout");
-    revalidatePath("/"); 
+    revalidatePath("/");
     revalidatePath("/[lang]/", "layout");
-    revalidatePath("/admin");
-    revalidatePath("/[lang]/admin", "layout");
   } catch (error: any) {
-    console.error("Error creating testimonial in Firebase:", error);
+    console.error("Error creating testimonial:", error);
     if (typeof error.digest === 'string' && error.digest.startsWith('NEXT_REDIRECT')) throw error;
-    throw new Error(error.message || "Failed to create testimonial in Firebase.");
+    throw new Error(error.message || "Failed to create testimonial.");
   }
-  if (newTestimonialId) {
-    redirect("/admin/testimonials");
-  }
+  redirect("/admin/testimonials");
 }
 
 export async function updateTestimonialAction(id: string, values: TestimonialFormValues) {
@@ -203,14 +175,12 @@ export async function updateTestimonialAction(id: string, values: TestimonialFor
     revalidatePath("/[lang]/admin/testimonials", "layout");
     revalidatePath(`/admin/testimonials/edit/${id}`);
     revalidatePath(`/[lang]/admin/testimonials/edit/${id}`, "layout");
-    revalidatePath("/"); 
+    revalidatePath("/");
     revalidatePath("/[lang]/", "layout");
-    revalidatePath("/admin");
-    revalidatePath("/[lang]/admin", "layout");
   } catch (error: any) {
-    console.error(`Error updating testimonial ${id} in Firebase:`, error);
+    console.error(`Error updating testimonial ${id}:`, error);
     if (typeof error.digest === 'string' && error.digest.startsWith('NEXT_REDIRECT')) throw error;
-    throw new Error(error.message || `Failed to update testimonial ${id} in Firebase.`);
+    throw new Error(error.message || `Failed to update testimonial.`);
   }
   redirect("/admin/testimonials");
 }
@@ -221,13 +191,11 @@ export async function deleteTestimonialAction(id: string) {
     
     revalidatePath("/admin/testimonials");
     revalidatePath("/[lang]/admin/testimonials", "layout");
-    revalidatePath("/"); 
+    revalidatePath("/");
     revalidatePath("/[lang]/", "layout");
-    revalidatePath("/admin");
-    revalidatePath("/[lang]/admin", "layout");
   } catch (error) {
-     console.error(`Error deleting testimonial ${id} from Firebase:`, error);
-    throw new Error(error instanceof Error ? error.message : `Failed to delete testimonial ${id} from Firebase.`);
+     console.error(`Error deleting testimonial ${id}:`, error);
+    throw new Error(error instanceof Error ? error.message : `Failed to delete testimonial.`);
   }
 }
 
@@ -237,11 +205,9 @@ export async function updateInquiryStatusAction(id: string, status: ClientInquir
     await update(ref(db, `inquiries/${id}`), { status: status });
     revalidatePath("/admin/inquiries");
     revalidatePath("/[lang]/admin/inquiries", "layout");
-    revalidatePath("/admin");
-    revalidatePath("/[lang]/admin", "layout"); 
   } catch (error) {
-    console.error(`Error updating inquiry status for ${id} in Firebase:`, error);
-     throw new Error(error instanceof Error ? error.message : `Failed to update inquiry ${id} in Firebase.`);
+    console.error(`Error updating inquiry status for ${id}:`, error);
+     throw new Error(error instanceof Error ? error.message : `Failed to update inquiry.`);
   }
 }
 
@@ -249,7 +215,7 @@ export async function submitQuoteRequestAction(data: QuoteRequestFormValues): Pr
   try {
     const newInquiryRef = push(ref(db, 'inquiries'));
     const newInquiryId = newInquiryRef.key;
-    if (!newInquiryId) throw new Error("Failed to generate inquiry ID from Firebase.");
+    if (!newInquiryId) throw new Error("Failed to generate inquiry ID.");
 
     const newInquiryData: Omit<ClientInquiry, 'id' | 'generatedQuote'> = { 
       name: data.name,
@@ -258,20 +224,18 @@ export async function submitQuoteRequestAction(data: QuoteRequestFormValues): Pr
       phoneNumber: data.phoneNumber || "",
       serviceRequested: data.service,
       details: data.projectDetails,
-      date: new Date().toISOString(), 
+      date: new Date().toISOString(),
       status: 'New',
     };
     
     await set(ref(db, `inquiries/${newInquiryId}`), newInquiryData);
 
-    revalidatePath("/admin/inquiries"); 
-    revalidatePath("/[lang]/admin/inquiries", "layout"); 
-    revalidatePath("/admin"); 
-    revalidatePath("/[lang]/admin", "layout"); 
+    revalidatePath("/admin/inquiries");
+    revalidatePath("/[lang]/admin/inquiries", "layout");
     
     return { success: true, newInquiryId: newInquiryId };
   } catch (e) {
-    console.error("Error in submitQuoteRequestAction with Firebase:", e);
+    console.error("Error submitting quote request:", e);
     const errorMessage = e instanceof Error ? e.message : "An unexpected error occurred.";
     return { success: false, error: `Failed to submit quote request: ${errorMessage}` };
   }
@@ -279,11 +243,10 @@ export async function submitQuoteRequestAction(data: QuoteRequestFormValues): Pr
 
 // Service Actions
 export async function createServiceAction(values: ServiceFormValues) {
-  let newServiceId: string | null = null;
   try {
     const newServiceRef = push(ref(db, 'services'));
-    newServiceId = newServiceRef.key;
-    if (!newServiceId) throw new Error("Failed to generate service ID from Firebase.");
+    const newServiceId = newServiceRef.key;
+    if (!newServiceId) throw new Error("Failed to generate service ID.");
 
     const newService: Omit<Service, 'id'> = {
       ...values,
@@ -295,16 +258,12 @@ export async function createServiceAction(values: ServiceFormValues) {
     revalidatePath("/[lang]/admin/services", "layout");
     revalidatePath("/services");
     revalidatePath("/[lang]/services", "layout");
-    revalidatePath("/admin");
-    revalidatePath("/[lang]/admin", "layout");
   } catch (error: any) {
-    console.error("Error creating service in Firebase:", error);
+    console.error("Error creating service:", error);
     if (typeof error.digest === 'string' && error.digest.startsWith('NEXT_REDIRECT')) throw error;
-    throw new Error(error.message || "Failed to create service in Firebase.");
+    throw new Error(error.message || "Failed to create service.");
   }
-  if (newServiceId) {
-    redirect("/admin/services");
-  }
+  redirect("/admin/services");
 }
 
 export async function updateServiceAction(id: string, values: ServiceFormValues) {
@@ -321,12 +280,10 @@ export async function updateServiceAction(id: string, values: ServiceFormValues)
     revalidatePath(`/[lang]/admin/services/edit/${id}`, "layout");
     revalidatePath("/services");
     revalidatePath("/[lang]/services", "layout");
-    revalidatePath("/admin");
-    revalidatePath("/[lang]/admin", "layout");
   } catch (error: any) {
-    console.error(`Error updating service ${id} in Firebase:`, error);
+    console.error(`Error updating service ${id}:`, error);
     if (typeof error.digest === 'string' && error.digest.startsWith('NEXT_REDIRECT')) throw error;
-    throw new Error(error.message || `Failed to update service ${id} in Firebase.`);
+    throw new Error(error.message || `Failed to update service.`);
   }
   redirect("/admin/services");
 }
@@ -336,14 +293,12 @@ export async function deleteServiceAction(id: string) {
     await remove(ref(db, `services/${id}`));
     
     revalidatePath("/admin/services");
-    revalidatePath("/[lang]/admin/services", "layout");
+    revalidatePath("/[lang]/admin/services", "layout
     revalidatePath("/services");
     revalidatePath("/[lang]/services", "layout");
-    revalidatePath("/admin");
-    revalidatePath("/[lang]/admin", "layout");
   } catch (error) {
-    console.error(`Error deleting service ${id} from Firebase:`, error);
-    throw new Error(error instanceof Error ? error.message : `Failed to delete service ${id} from Firebase.`);
+    console.error(`Error deleting service ${id}:`, error);
+    throw new Error(error instanceof Error ? error.message : `Failed to delete service.`);
   }
 }
 
@@ -354,11 +309,11 @@ export async function getSiteContentAction(): Promise<SiteContent> {
     if (snapshot.exists()) {
       return snapshot.val() as SiteContent;
     }
-    console.warn("Firebase: No site content found at '/siteContent/default'. Returning local default content. Please check Firebase Realtime Database rules and if data exists at this path.");
+    console.warn("Firebase: No site content found, returning local default.");
     return defaultSiteContent;
   } catch (error) {
-    console.error("CRITICAL: Firebase Realtime Database read error for '/siteContent/default'.", error);
-    console.warn("Firebase: PERMISSION DENIED or other error while fetching site content. Check your Firebase Realtime Database rules for the '/siteContent/default' path to ensure reads are allowed (e.g., '.read': true or '.read': 'auth != null'). Returning local default content to allow page rendering.");
+    console.error("CRITICAL: Firebase read error for site content.", error);
+    console.warn("Firebase: Returning local default content due to read error.");
     return defaultSiteContent; 
   }
 }
@@ -372,11 +327,11 @@ export async function updateSiteContentAction(values: SiteContentFormValues): Pr
     revalidatePath("/[lang]/about", "layout");
     revalidatePath("/contact");
     revalidatePath("/[lang]/contact", "layout");
-    revalidatePath("/"); 
-    revalidatePath("/[lang]/", "layout"); 
+    revalidatePath("/");
+    revalidatePath("/[lang]/", "layout");
     return { success: true };
   } catch (error: any) {
-    console.error("Error updating site content in Firebase:", error);
+    console.error("Error updating site content:", error);
     return { success: false, error: error.message || "Failed to update site content." };
   }
 }

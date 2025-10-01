@@ -6,28 +6,31 @@ import { ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import type { Locale } from '@/lib/i18n/i18n-config';
 import { i18n } from '@/lib/i18n/i18n-config';
+import { getDictionary } from '@/lib/i18n/get-dictionary';
 
-export default function NewProjectPage({ params }: { params?: { lang?: Locale } }) {
-  const lang = params?.lang || i18n.defaultLocale;
+export default async function NewProjectPage({ params }: { params: { lang: Locale } }) {
+  const lang = params.lang || i18n.defaultLocale;
+  const dictionary = await getDictionary(lang);
+
   return (
     <div className="space-y-6">
       <div className="flex items-center gap-4">
         <Button variant="outline" size="icon" asChild>
           <Link href={`/${lang}/admin/projects`}>
             <ArrowLeft className="h-4 w-4" />
-            <span className="sr-only">Back to Projects</span>
+            <span className="sr-only">{dictionary.backToProjects}</span>
           </Link>
         </Button>
-        <h1 className="text-2xl font-bold text-primary">Add New Project</h1>
+        <h1 className="text-2xl font-bold text-primary">{dictionary.addNewProject}</h1>
       </div>
       
       <Card className="shadow-lg">
         <CardHeader>
-          <CardTitle>Project Details</CardTitle>
-          <CardDescription>Fill in the information for the new project.</CardDescription>
+          <CardTitle>{dictionary.projectFormCardTitle}</CardTitle>
+          <CardDescription>{dictionary.projectFormCardDescriptionNew}</CardDescription>
         </CardHeader>
         <CardContent>
-          <ProjectForm formAction="create" />
+          <ProjectForm formAction="create" dictionary={dictionary} />
         </CardContent>
       </Card>
     </div>

@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { iconMap, type Project } from "@/lib/placeholder-data";
-import ProjectImage from "@/components/admin/projects/ProjectImage"; // Nuevo componente
+import ProjectImage from "@/components/admin/projects/ProjectImage";
 import Link from "next/link";
 import { PlusCircle, Edit, Trash2, ExternalLink, Github } from "lucide-react";
 import { deleteProjectAction } from "@/components/admin/actions";
@@ -21,6 +21,7 @@ import { db } from "@/lib/firebase/config";
 import { ref, get, child } from "firebase/database";
 import type { Locale } from '@/lib/i18n/i18n-config';
 import { i18n } from '@/lib/i18n/i18n-config';
+import { getDictionary } from '@/lib/i18n/get-dictionary';
 
 async function getProjectsFromDB(): Promise<Project[]> {
   try {
@@ -41,39 +42,18 @@ async function getProjectsFromDB(): Promise<Project[]> {
   }
 }
 
-export default async function AdminProjectsPage({ params }: { params?: Promise<{ lang?: Locale }> }) {
-  const resolvedParams = await params;
-  const lang = resolvedParams?.lang || i18n.defaultLocale;
+export default async function AdminProjectsPage({ params }: { params: { lang: Locale } }) {
+  const lang = params.lang || i18n.defaultLocale;
   const projects = await getProjectsFromDB();
-
-  // 🔍 CÓDIGO DE DEBUG
-  console.log('=== DEBUG: Projects Data ===');
-  console.log('Total projects:', projects.length);
-  console.log('Raw projects data:', projects);
-  
-  projects.forEach((project, index) => {
-    console.log(`\n--- Project ${index + 1}: ${project.title} ---`);
-    console.log('ID:', project.id);
-    console.log('Image URL:', project.image);
-    console.log('Image type:', typeof project.image);
-    console.log('Technologies:', project.technologies);
-    console.log('Technologies type:', typeof project.technologies);
-    console.log('Technologies is array:', Array.isArray(project.technologies));
-    console.log('Category:', project.category);
-    console.log('Client:', project.clientName);
-    console.log('Live Link:', project.liveLink);
-    console.log('Repo Link:', project.repoLink);
-  });
-  console.log('=== END DEBUG ===\n');
-  // 🔍 FIN DEL CÓDIGO DE DEBUG
+  const dictionary = await getDictionary(lang);
 
   return (
     <div className="space-y-8">
       <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-bold text-primary">Manage Projects</h1>
+        <h1 className="text-3xl font-bold text-primary">{dictionary.manageProjects}</h1>
         <Button asChild className="bg-primary hover:bg-primary/90 text-primary-foreground">
           <Link href={`/${lang}/admin/projects/new`}>
-            <PlusCircle className="mr-2 h-5 w-5" /> Add New Project
+            <PlusCircle className="mr-2 h-5 w-5" /> {dictionary.addNewProject}
           </Link>
         </Button>
       </div>
@@ -83,9 +63,8 @@ export default async function AdminProjectsPage({ params }: { params?: Promise<{
           {projects.map((project) => {
             const IconComponent = iconMap[project.iconName] || iconMap['Layers'];
             return (
-              <Card key={project.id} className="shadow-md flex flex-col">
+              <Card key={project.id} className="shadow-md flex flex-col bg-card">
                 <CardHeader className="p-0">
-                  {/* Usar el nuevo componente de imagen */}
                   {project.image && (
                     <ProjectImage 
                       src={project.image}
@@ -100,7 +79,7 @@ export default async function AdminProjectsPage({ params }: { params?: Promise<{
                       <CardTitle className="text-lg font-semibold">{project.title}</CardTitle>
                     </div>
                     <CardDescription className="text-sm text-muted-foreground">
-                      {project.category} {project.clientName && `- Client: ${project.clientName}`}
+                      {project.category} {project.clientName && `- ${dictionary.projectCardClient}: ${project.clientName}`}
                     </CardDescription>
                   </div>
                 </CardHeader>
@@ -110,9 +89,8 @@ export default async function AdminProjectsPage({ params }: { params?: Promise<{
                     {project.shortDescription}
                   </p>
                   
-                  {/* Tecnologías con manejo mejorado */}
                   <div>
-                    <h4 className="text-xs font-semibold mb-2 text-primary">Technologies:</h4>
+                    <h4 className="text-xs font-semibold mb-2 text-primary">{dictionary.projectCardKeyTechnologies}:</h4>
                     <div className="flex flex-wrap gap-1.5">
                       {Array.isArray(project.technologies) ? (
                         project.technologies.slice(0, 5).map((tech) => (
@@ -121,14 +99,13 @@ export default async function AdminProjectsPage({ params }: { params?: Promise<{
                           </Badge>
                         ))
                       ) : typeof project.technologies === 'string' ? (
-                        // Fallback para strings
                         project.technologies.split(',').slice(0, 5).map((tech) => (
                           <Badge key={tech.trim()} variant="secondary" className="text-xs px-2 py-0.5">
                             {tech.trim()}
                           </Badge>
                         ))
                       ) : (
-                        <Badge variant="outline" className="text-xs">No technologies</Badge>
+                        <Badge variant="outline" className="text-xs">{dictionary.noTechnologies}</Badge>
                       )}
                     </div>
                   </div>
@@ -139,14 +116,14 @@ export default async function AdminProjectsPage({ params }: { params?: Promise<{
                     {project.liveLink && (
                       <Button variant="outline" size="sm" asChild className="text-xs flex-1">
                         <Link href={project.liveLink} target="_blank" rel="noopener noreferrer">
-                          <ExternalLink className="mr-1.5 h-3.5 w-3.5" /> Live
+                          <ExternalLink className="mr-1.5 h-3.5 w-3.5" /> {dictionary.projectCardLiveDemo}
                         </Link>
                       </Button>
                     )}
                     {project.repoLink && (
                       <Button variant="outline" size="sm" asChild className="text-xs flex-1">
                         <Link href={project.repoLink} target="_blank" rel="noopener noreferrer">
-                          <Github className="mr-1.5 h-3.5 w-3.5" /> Repo
+                          <Github className="mr-1.5 h-3.5 w-3.5" /> {dictionary.projectCardViewCode}
                         </Link>
                       </Button>
                     )}
@@ -166,19 +143,19 @@ export default async function AdminProjectsPage({ params }: { params?: Promise<{
                       </AlertDialogTrigger>
                       <AlertDialogContent>
                         <AlertDialogHeader>
-                          <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                          <AlertDialogTitle>{dictionary.areYouSure}</AlertDialogTitle>
                           <AlertDialogDescription>
-                            This action cannot be undone. This will permanently delete the project "{project.title}" from Firebase.
+                            {dictionary.deleteProjectWarning} "{project.title}".
                           </AlertDialogDescription>
                         </AlertDialogHeader>
                         <AlertDialogFooter>
-                          <AlertDialogCancel>Cancel</AlertDialogCancel>
+                          <AlertDialogCancel>{dictionary.cancel}</AlertDialogCancel>
                           <form action={async () => {
                             "use server";
                             if (!project.id) return;
                             await deleteProjectAction(project.id);
                           }}>
-                            <AlertDialogAction type="submit">Delete</AlertDialogAction>
+                            <AlertDialogAction type="submit">{dictionary.delete}</AlertDialogAction>
                           </form>
                         </AlertDialogFooter>
                       </AlertDialogContent>
@@ -190,17 +167,28 @@ export default async function AdminProjectsPage({ params }: { params?: Promise<{
           })}
         </div>
       ) : (
-        <Card>
-          <CardContent className="p-8 text-center text-muted-foreground">
-            <div className="flex flex-col items-center gap-4">
-              <PlusCircle className="h-16 w-16 text-muted-foreground/50" />
+        <Card className="w-full bg-card shadow-lg border-2 border-dashed border-muted-foreground/30 hover:border-primary/60 transition-all duration-300 ease-in-out">
+          <CardContent 
+            className="p-10 text-center text-muted-foreground flex flex-col items-center justify-center h-full"
+          >
+            <div className="flex flex-col items-center gap-6 p-8 rounded-lg bg-background/20">
+              <svg xmlns="http://www.w3.org/2000/svg" width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round" className="text-primary/50">
+                <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                <line x1="3" y1="9" x2="21" y2="9"></line>
+                <line x1="9" y1="21" x2="9" y2="9"></line>
+                <path d="M14.5 3.5v-2a.5.5 0 0 0-.5-.5h-3a.5.5 0 0 0-.5.5v2"/>
+                <path d="M12 12m-1 0a1 1 0 1 0 2 0a1 1 0 1 0-2 0"/>
+                <path d="m14.2 14.2.8.8"/>
+                <path d="m16.5 10-.8.8"/>
+              </svg>
               <div>
-                <h3 className="text-lg font-semibold mb-2">No projects found</h3>
-                <p className="text-sm">Add your first project to get started!</p>
+                <h3 className="text-xl font-bold mb-2 text-card-foreground">{dictionary.noProjectsFoundTitle}</h3>
+                <p className="text-sm max-w-xs mx-auto">{dictionary.noProjectsFoundDescription}</p>
               </div>
-              <Button asChild className="mt-2">
+              <Button asChild className="mt-4 text-sm font-semibold">
                 <Link href={`/${lang}/admin/projects/new`}>
-                  Add New Project
+                  <PlusCircle className="mr-2 h-5 w-5" />
+                  {dictionary.addNewProjectCTA}
                 </Link>
               </Button>
             </div>

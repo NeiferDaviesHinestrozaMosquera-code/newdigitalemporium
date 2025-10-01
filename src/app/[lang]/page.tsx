@@ -1,146 +1,122 @@
-import Link from 'next/link';
-import { Button } from '@/components/ui/button';
-import type { Service, Testimonial } from '@/lib/placeholder-data';
-import ServiceCard from '@/components/shared/ServiceCard';
-import TestimonialCard from '@/components/shared/TestimonialCard';
-import { ArrowRight, Zap } from 'lucide-react';
-import type { Metadata } from 'next';
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import type { Testimonial } from "@/lib/placeholder-data";
+import Link from "next/link";
+import { PlusCircle, Edit, Trash2 } from "lucide-react";
+import { deleteTestimonialAction } from "@/components/admin/actions";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { db } from "@/lib/firebase/config";
-import { ref, get, child, limitToFirst, query as firebaseQuery } from "firebase/database";
-import { getDictionary } from '@/lib/i18n/get-dictionary';
-import { i18n, type Locale } from '@/lib/i18n/i18n-config';
+import { ref, get, child } from "firebase/database";
+import type { Locale } from '@/lib/i18n/i18n-config';
+import { i18n } from '@/lib/i18n/i18n-config';
 
-// CORRECCIÓN: Await params antes de usar sus propiedades
-export async function generateMetadata({ params }: { params: Promise<{ lang: Locale }> }): Promise<Metadata> {
-  const { lang } = await params;
-  const dictionary = await getDictionary(lang);
-  return {
-    title: dictionary.heroTitle as string || 'Digital Emporium - Innovative Digital Solutions',
-    description: dictionary.heroSubtitle as string || 'Digital Emporium offers web and app development, AI bots, and custom agent creation to elevate your business.',
-  };
-}
-
-async function getHomePageData(): Promise<{ services: Service[], testimonials: Testimonial[] }> {
+async function getTestimonialsFromDB(): Promise<Testimonial[]> {
   try {
     const dbRef = ref(db);
-    
-    const servicesQueryInstance = firebaseQuery(child(dbRef, 'services'), limitToFirst(3));
-    const servicesSnapshot = await get(servicesQueryInstance);
-    let services: Service[] = [];
-    if (servicesSnapshot.exists()) {
-      const servicesObject = servicesSnapshot.val();
-      services = Object.keys(servicesObject).map(key => ({ id: key, ...servicesObject[key] }));
+    const snapshot = await get(child(dbRef, `testimonials`));
+    if (snapshot.exists()) {
+      const testimonialsObject = snapshot.val();
+      const testimonialsArray = Object.keys(testimonialsObject)
+        .map(key => ({ id: key, ...testimonialsObject[key] }))
+         .sort((a, b) => a.name.localeCompare(b.name)); 
+      return testimonialsArray as Testimonial[];
+    } else {
+      return [];
     }
-
-    const testimonialsQueryInstance = firebaseQuery(child(dbRef, 'testimonials'), limitToFirst(3));
-    const testimonialsSnapshot = await get(testimonialsQueryInstance);
-    let testimonials: Testimonial[] = [];
-    if (testimonialsSnapshot.exists()) {
-      const testimonialsObject = testimonialsSnapshot.val();
-      testimonials = Object.keys(testimonialsObject).map(key => ({ id: key, ...testimonialsObject[key] }));
-    }
-    
-    return { services: services as Service[], testimonials: testimonials as Testimonial[] };
   } catch (error) {
-    console.error("Error fetching homepage data from Firebase DB:", error);
-    return { services: [], testimonials: [] };
+    console.error("Error fetching testimonials from Firebase DB:", error);
+    return [];
   }
 }
 
-// CORRECCIÓN: Tipo actualizado con Promise y await params
-export default async function HomePage({ params }: { params: Promise<{ lang: Locale }> }) {
+export default async function AdminTestimonialsPage({ params }: { params: Promise<{ lang: Locale }> }) {
   const { lang } = await params;
-  const { services, testimonials } = await getHomePageData();
-  const dictionary = await getDictionary(lang);
+  const testimonials = await getTestimonialsFromDB();
 
   return (
-    <div className="flex flex-col">
-      {/* Hero Section */}
-      <section className="py-20 md:py-32 bg-gradient-to-br from-primary/5 via-background to-background overflow-hidden">
-        <div className="container mx-auto px-4 text-center">
-          <div className="inline-block mb-6 animate-in fade-in zoom-in duration-500">
-            <Zap className="w-16 h-16 text-accent transition-transform hover:scale-110 duration-300" />
-          </div>
-          <h1 className="text-4xl md:text-6xl font-bold tracking-tight text-primary mb-6 animate-in fade-in slide-in-from-bottom-10 duration-700">
-            {dictionary.heroTitle as string}
-          </h1>
-          <p className="text-lg md:text-xl text-foreground/80 max-w-3xl mx-auto mb-10 animate-in fade-in slide-in-from-bottom-10 delay-200 duration-700">
-            {dictionary.heroSubtitle as string}
-          </p>
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mt-10">
-            <div className="animate-in fade-in slide-in-from-left-12 duration-700 delay-400">
-              <Button asChild size="lg" className="bg-primary hover:bg-primary/90 text-primary-foreground px-8 py-3 rounded-lg text-lg w-full sm:w-auto">
-                <Link href={`/${lang}/services`}>{dictionary.exploreServices as string}</Link>
-              </Button>
-            </div>
-            <div className="animate-in fade-in slide-in-from-right-12 duration-700 delay-500">
-              <Button asChild variant="outline" size="lg" className="border-primary text-primary hover:bg-primary/5 hover:text-primary px-8 py-3 rounded-lg text-lg w-full sm:w-auto">
-                <Link href={`/${lang}/quote-request`}>{dictionary.getAQuote as string}</Link>
-              </Button>
-            </div>
-          </div>
-        </div>
-      </section>
+    <div className="space-y-8">
+      <div className="flex items-center justify-between">
+        <h1 className="text-3xl font-bold text-primary">Manage Testimonials</h1>
+        <Button asChild className="bg-primary hover:bg-primary/90 text-primary-foreground">
+          <Link href={`/${lang}/admin/testimonials/new`}>
+            <PlusCircle className="mr-2 h-5 w-5" /> Add New Testimonial
+          </Link>
+        </Button>
+      </div>
 
-      {/* Services Section */}
-      <section id="services" className="py-16 md:py-24 bg-background overflow-hidden">
-        <div className="container mx-auto px-4">
-          <h2 className="text-3xl md:text-4xl font-bold text-center text-primary mb-4 animate-in fade-in slide-in-from-bottom-5 duration-500">{dictionary.ourServices as string}</h2>
-          <p className="text-lg text-muted-foreground text-center mb-12 max-w-2xl mx-auto animate-in fade-in slide-in-from-bottom-5 delay-100 duration-500">
-            {dictionary.ourServicesDescription as string}
-          </p>
-          {services.length > 0 ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {services.map((service, index) => ( 
-                <div key={service.id} className={`animate-in fade-in slide-in-from-bottom-10 duration-500`} style={{ animationDelay: `${index * 150 + 200}ms` }}>
-                  <ServiceCard service={service} lang={lang} />
-                </div>
-              ))}
-            </div>
-            ) : <p className="text-center text-muted-foreground">No services to display currently.</p>
-          }
-          <div className="text-center mt-12 animate-in fade-in zoom-in delay-500 duration-500">
-            <Button asChild variant="link" className="text-accent hover:text-accent/80 text-lg">
-              <Link href={`/${lang}/services`}>
-                {dictionary.viewAllServices as string} <ArrowRight className="ml-2 h-5 w-5" />
-              </Link>
-            </Button>
-          </div>
+      {testimonials.length > 0 ? (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {testimonials.map((testimonial) => {
+            const fallbackInitials = testimonial.name.split(' ').map(n => n[0]).join('').toUpperCase();
+            return(
+              <Card key={testimonial.id} className="shadow-md">
+                <CardHeader className="flex flex-row items-start gap-4">
+                  <Avatar className="h-12 w-12">
+                    {testimonial.avatar && <AvatarImage src={testimonial.avatar} alt={testimonial.name} data-ai-hint={testimonial.dataAiHint || 'person image'} />}
+                    <AvatarFallback>{fallbackInitials}</AvatarFallback>
+                  </Avatar>
+                  <div>
+                    <CardTitle className="text-lg">{testimonial.name}</CardTitle>
+                    {testimonial.company && <CardDescription className="text-xs">{testimonial.company}</CardDescription>}
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <blockquote className="italic text-sm text-muted-foreground">"{testimonial.quote}"</blockquote>
+                </CardContent>
+                <CardFooter className="flex justify-end gap-2 border-t pt-4">
+                  <Button variant="outline" size="sm" asChild>
+                    <Link href={`/${lang}/admin/testimonials/edit/${testimonial.id}`}>
+                      <Edit className="h-4 w-4" />
+                    </Link>
+                  </Button>
+                  <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                      <Button variant="destructive" size="sm">
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                          This action cannot be undone. This will permanently delete the testimonial from Firebase.
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <form action={async () => {
+                          "use server";
+                          if (!testimonial.id) return;
+                          await deleteTestimonialAction(testimonial.id);
+                        }}>
+                          <AlertDialogAction type="submit">Delete</AlertDialogAction>
+                        </form>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
+                </CardFooter>
+              </Card>
+            );
+          })}
         </div>
-      </section>
-
-      {/* Testimonials Section */}
-      <section id="testimonials" className="py-16 md:py-24 bg-secondary/20 overflow-hidden">
-        <div className="container mx-auto px-4">
-          <h2 className="text-3xl md:text-4xl font-bold text-center text-primary mb-4 animate-in fade-in slide-in-from-bottom-5 duration-500">{dictionary.whatOurClientsSay as string}</h2>
-          <p className="text-lg text-muted-foreground text-center mb-12 max-w-2xl mx-auto animate-in fade-in slide-in-from-bottom-5 delay-100 duration-500">
-            {dictionary.clientsSayDescription as string}
-          </p>
-          {testimonials.length > 0 ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {testimonials.map((testimonial, index) => (
-                <div key={testimonial.id} className={`animate-in fade-in slide-in-from-bottom-10 duration-500`} style={{ animationDelay: `${index * 150 + 200}ms` }}>
-                  <TestimonialCard testimonial={testimonial} />
-                </div>
-              ))}
-            </div>
-             ) : <p className="text-center text-muted-foreground">No testimonials to display currently.</p>
-          }
-        </div>
-      </section>
-
-      {/* Call to Action Section */}
-      <section className="py-16 md:py-24 bg-primary text-primary-foreground overflow-hidden">
-        <div className="container mx-auto px-4 text-center">
-          <h2 className="text-3xl md:text-4xl font-bold mb-6 animate-in fade-in slide-in-from-bottom-5 duration-500">{dictionary.readyToStart as string}</h2>
-          <p className="text-lg md:text-xl max-w-2xl mx-auto mb-10 animate-in fade-in slide-in-from-bottom-5 delay-100 duration-500">
-            {dictionary.readyToStartDescription as string}
-          </p>
-          <Button asChild size="lg" className="bg-accent hover:bg-accent/90 text-accent-foreground px-10 py-4 rounded-lg text-xl animate-in fade-in zoom-in delay-300 duration-500">
-            <Link href={`/${lang}/quote-request`}>{dictionary.requestAQuoteNow as string}</Link>
-          </Button>
-        </div>
-      </section>
+      ) : (
+         <Card>
+          <CardContent className="p-6 text-center text-muted-foreground">
+            No testimonials found. Add your first testimonial!
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 }

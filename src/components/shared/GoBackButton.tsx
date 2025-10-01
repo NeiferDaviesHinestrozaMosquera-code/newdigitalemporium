@@ -1,17 +1,22 @@
 
 "use client";
 
-import { Button } from "@/components/ui/button";
-import { ArrowLeft } from "lucide-react";
-import Link from "next/link";
+import { useRouter } from 'next/navigation';
+import { Button } from '@/components/ui/button';
+import { ArrowLeft } from 'lucide-react';
+import type { Dictionary } from '@/lib/i18n/get-dictionary';
 
-export default function GoBackButton({ label }: { label: string }) {
+interface GoBackButtonProps {
+    dictionary: Dictionary
+}
+
+export default function GoBackButton({ dictionary }: GoBackButtonProps) {
+  const router = useRouter();
+
   return (
-    <Button asChild variant="outline" size="lg">
-      <Link href="#" onClick={(e) => { e.preventDefault(); window.history.back(); }}>
-        <ArrowLeft className="mr-2 h-5 w-5" />
-        {label}
-      </Link>
+    <Button variant="outline" onClick={() => router.back()} className="mb-8">
+      <ArrowLeft className="mr-2 h-4 w-4" />
+      {dictionary.goBack as string}
     </Button>
   );
 }

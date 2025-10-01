@@ -30,32 +30,26 @@ import { ProjectFormSchema, type ProjectFormValues } from "@/lib/schemas";
 import { useRouter } from "next/navigation";
 import { Loader2 } from "lucide-react";
 import React from "react";
+import type { Dictionary } from "@/lib/i18n/get-dictionary";
 
 interface ProjectFormProps {
   initialData?: Project | null;
   formAction: "create" | "update";
+  dictionary: Dictionary;
 }
 
-export default function ProjectForm({ initialData, formAction }: ProjectFormProps) {
+export default function ProjectForm({ initialData, formAction, dictionary }: ProjectFormProps) {
   const { toast } = useToast();
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = React.useState(false);
-  const mountedRef = React.useRef(true);
-
-  React.useEffect(() => {
-    mountedRef.current = true;
-    return () => {
-      mountedRef.current = false;
-    };
-  }, []);
 
   const defaultValues = React.useMemo(() => ({
     title: initialData?.title || "",
     shortDescription: initialData?.shortDescription || "",
     description: initialData?.description || "",
-    image: initialData?.image || "https://placehold.co/600x400.png",
+    images: initialData?.images?.join('\n') || "", // Join array for textarea
     dataAiHint: initialData?.dataAiHint || "",
-    technologies: initialData?.technologies?.join(', ') || "", // Join array for textarea
+    technologies: initialData?.technologies?.join(', ') || "",
     liveLink: initialData?.liveLink || "",
     repoLink: initialData?.repoLink || "",
     clientName: initialData?.clientName || "",
@@ -63,38 +57,43 @@ export default function ProjectForm({ initialData, formAction }: ProjectFormProp
     iconName: initialData?.iconName || allIconNames[0],
   }), [initialData]);
 
-
   const form = useForm<ProjectFormValues>({
     resolver: zodResolver(ProjectFormSchema),
     defaultValues,
+    mode: "onChange", // Validate on change to give user feedback for URLs
   });
-  
+
   React.useEffect(() => {
     form.reset(defaultValues);
   }, [defaultValues, form]);
-
 
   async function onSubmit(values: ProjectFormValues) {
     setIsSubmitting(true);
     try {
       if (formAction === "create") {
         await createProjectAction(values);
+        toast({
+          title: dictionary.projectCreatedSuccessTitle,
+          description: dictionary.projectCreatedSuccessDescription,
+        });
       } else if (formAction === "update" && initialData?.id) {
         await updateProjectAction(initialData.id, values);
+        toast({
+          title: dictionary.projectUpdatedSuccessTitle,
+          description: dictionary.projectUpdatedSuccessDescription,
+        });
       }
     } catch (error: any) {
-      if (typeof error.digest === 'string' && error.digest.startsWith('NEXT_REDIRECT')) {
+      if (error.digest?.startsWith('NEXT_REDIRECT')) {
         throw error;
       }
       toast({
-        title: `Error ${formAction === "create" ? "Creating" : "Updating"} Project`,
-        description: error.message || "An unexpected error occurred.",
+        title: formAction === 'create' ? dictionary.projectCreationErrorTitle : dictionary.projectUpdateErrorTitle,
+        description: error.message || dictionary.unexpectedError,
         variant: "destructive",
       });
     } finally {
-      if (mountedRef.current) {
-        setIsSubmitting(false);
-      }
+      setIsSubmitting(false);
     }
   }
 
@@ -106,9 +105,9 @@ export default function ProjectForm({ initialData, formAction }: ProjectFormProp
           name="title"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Project Title</FormLabel>
+              <FormLabel>{dictionary.projectFormLabelTitle}</FormLabel>
               <FormControl>
-                <Input placeholder="e.g., Awesome E-commerce Site" {...field} />
+                <Input placeholder={dictionary.projectFormPlaceholderTitle} {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -120,9 +119,9 @@ export default function ProjectForm({ initialData, formAction }: ProjectFormProp
           name="shortDescription"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Short Description</FormLabel>
+              <FormLabel>{dictionary.projectFormLabelShortDescription}</FormLabel>
               <FormControl>
-                <Textarea placeholder="A brief summary of the project..." {...field} />
+                <Textarea placeholder={dictionary.projectFormPlaceholderShortDescription} {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -134,9 +133,9 @@ export default function ProjectForm({ initialData, formAction }: ProjectFormProp
           name="description"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Full Description</FormLabel>
+              <FormLabel>{dictionary.projectFormLabelDescription}</FormLabel>
               <FormControl>
-                <Textarea placeholder="Detailed explanation of the project, challenges, solutions..." className="min-h-[120px]" {...field} />
+                <Textarea placeholder={dictionary.projectFormPlaceholderDescription} className="min-h-[120px]" {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -145,14 +144,18 @@ export default function ProjectForm({ initialData, formAction }: ProjectFormProp
 
         <FormField
           control={form.control}
-          name="image"
+          name="images"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Image URL</FormLabel>
+              <FormLabel>{dictionary.projectFormLabelImageURLs}</FormLabel>
               <FormControl>
-                <Input placeholder="https://placehold.co/600x400.png" {...field} />
+                <Textarea 
+                  placeholder={dictionary.projectFormPlaceholderImageURLs}
+                  className="min-h-[120px]"
+                  {...field} 
+                />
               </FormControl>
-              <FormDescription>URL for the project's main image.</FormDescription>
+              <FormDescription>{dictionary.projectFormDescriptionImageURLs}</FormDescription>
               <FormMessage />
             </FormItem>
           )}
@@ -163,11 +166,11 @@ export default function ProjectForm({ initialData, formAction }: ProjectFormProp
           name="dataAiHint"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Image AI Hint (Optional)</FormLabel>
+              <FormLabel>{dictionary.projectFormLabelImageAIHint}</FormLabel>
               <FormControl>
-                <Input placeholder="e.g., modern website" {...field} />
+                <Input placeholder={dictionary.projectFormPlaceholderImageAIHint} {...field} />
               </FormControl>
-              <FormDescription>Keywords for AI image search if using a placeholder (max 2 words).</FormDescription>
+              <FormDescription>{dictionary.projectFormDescriptionImageAIHint}</FormDescription>
               <FormMessage />
             </FormItem>
           )}
@@ -178,11 +181,11 @@ export default function ProjectForm({ initialData, formAction }: ProjectFormProp
           name="technologies"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Technologies Used</FormLabel>
+              <FormLabel>{dictionary.projectFormLabelTechnologies}</FormLabel>
               <FormControl>
-                <Textarea placeholder="e.g., React, Next.js, Tailwind CSS, Firebase" {...field} />
+                <Textarea placeholder={dictionary.projectFormPlaceholderTechnologies} {...field} />
               </FormControl>
-              <FormDescription>Comma-separated list of technologies.</FormDescription>
+              <FormDescription>{dictionary.projectFormDescriptionTechnologies}</FormDescription>
               <FormMessage />
             </FormItem>
           )}
@@ -193,9 +196,9 @@ export default function ProjectForm({ initialData, formAction }: ProjectFormProp
           name="category"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Category</FormLabel>
+              <FormLabel>{dictionary.projectFormLabelCategory}</FormLabel>
               <FormControl>
-                <Input placeholder="e.g., Web Development, Mobile App, AI Solution" {...field} />
+                <Input placeholder={dictionary.projectFormPlaceholderCategory} {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -207,11 +210,11 @@ export default function ProjectForm({ initialData, formAction }: ProjectFormProp
           name="iconName"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Icon (for Admin display)</FormLabel>
-              <Select onValueChange={field.onChange} defaultValue={field.value}>
+              <FormLabel>{dictionary.projectFormLabelIcon}</FormLabel>
+              <Select onValuechange={field.onChange} defaultValue={field.value}>
                 <FormControl>
                   <SelectTrigger>
-                    <SelectValue placeholder="Select an icon" />
+                    <SelectValue placeholder={dictionary.projectFormPlaceholderIcon} />
                   </SelectTrigger>
                 </FormControl>
                 <SelectContent>
@@ -222,7 +225,7 @@ export default function ProjectForm({ initialData, formAction }: ProjectFormProp
                   ))}
                 </SelectContent>
               </Select>
-              <FormDescription>Choose an icon that represents the project category.</FormDescription>
+              <FormDescription>{dictionary.projectFormDescriptionIcon}</FormDescription>
               <FormMessage />
             </FormItem>
           )}
@@ -233,7 +236,7 @@ export default function ProjectForm({ initialData, formAction }: ProjectFormProp
           name="liveLink"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Live Project Link (Optional)</FormLabel>
+              <FormLabel>{dictionary.projectFormLabelLiveLink}</FormLabel>
               <FormControl>
                 <Input type="url" placeholder="https://example.com" {...field} />
               </FormControl>
@@ -247,7 +250,7 @@ export default function ProjectForm({ initialData, formAction }: ProjectFormProp
           name="repoLink"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Repository Link (Optional)</FormLabel>
+              <FormLabel>{dictionary.projectFormLabelRepoLink}</FormLabel>
               <FormControl>
                 <Input type="url" placeholder="https://github.com/user/project" {...field} />
               </FormControl>
@@ -261,22 +264,20 @@ export default function ProjectForm({ initialData, formAction }: ProjectFormProp
           name="clientName"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Client Name (Optional)</FormLabel>
+              <FormLabel>{dictionary.projectFormLabelClientName}</FormLabel>
               <FormControl>
-                <Input placeholder="e.g., Acme Corp" {...field} />
+                <Input placeholder={dictionary.projectFormPlaceholderClientName} {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
           )}
         />
 
-        <Button type="submit" disabled={isSubmitting} className="bg-accent hover:bg-accent/90 text-accent-foreground">
+        <Button type="submit" disabled={isSubmitting} className="bg-primary hover:bg-primary/90 text-primary-foreground">
           {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-          {formAction === "create" ? "Create Project" : "Update Project"}
+          {formAction === "create" ? dictionary.createProjectButton : dictionary.updateProjectButton}
         </Button>
       </form>
     </Form>
   );
 }
-
-    
