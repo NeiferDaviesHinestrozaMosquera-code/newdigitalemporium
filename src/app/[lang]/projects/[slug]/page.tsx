@@ -66,6 +66,10 @@ export default async function ProjectDetailsPage({ params }: { params: { slug: s
     notFound();
   }
 
+  const imagesArray = project.images && typeof project.images === 'object'
+    ? Object.values(project.images)
+    : [];
+
   return (
     <div className="container mx-auto px-4 py-12 md:py-16">
         <div className="max-w-4xl mx-auto">
@@ -75,7 +79,7 @@ export default async function ProjectDetailsPage({ params }: { params: { slug: s
 
             <main>
                  {/* Carousel */}
-                <ProjectImageCarousel images={project.images || []} altText={project.title} />
+                <ProjectImageCarousel images={imagesArray} altText={project.title} />
 
                 {/* Header */}
                 <header className="my-8">
