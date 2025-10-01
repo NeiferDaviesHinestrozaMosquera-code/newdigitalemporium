@@ -1,4 +1,3 @@
-
 import type { Project } from '@/lib/placeholder-data';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -20,15 +19,19 @@ export default function ProjectCard({ project, dictionary, lang }: ProjectCardPr
 
   // Generate a slug from the project title
   const slug = project.title.toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]+/g, '');
+  
+  const imagesArray = project.images && typeof project.images === 'object' 
+    ? Object.values(project.images) 
+    : project.images;
 
   return (
     <Card className="group flex flex-col h-full shadow-lg hover:shadow-xl transition-all duration-300 rounded-lg overflow-hidden hover:-translate-y-1">
       <CardHeader className="p-0">
         <Link href={`/${lang}/projects/${slug}`} className="block">
-          {project.images && project.images.length > 0 && (
+          {imagesArray && imagesArray.length > 0 && (
             <div className="relative w-full h-52 rounded-t-lg overflow-hidden">
               <Image 
-                src={project.images[0]} 
+                src={imagesArray[0]} 
                 alt={project.title} 
                 fill={true}
                 sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
@@ -90,4 +93,3 @@ export default function ProjectCard({ project, dictionary, lang }: ProjectCardPr
     </Card>
   );
 }
-

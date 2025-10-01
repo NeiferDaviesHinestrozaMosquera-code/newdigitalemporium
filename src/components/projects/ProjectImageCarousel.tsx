@@ -1,4 +1,3 @@
-
 "use client";
 
 import React from 'react';
@@ -9,7 +8,7 @@ import Image from 'next/image';
 import { cn } from '@/lib/utils';
 
 interface ProjectImageCarouselProps {
-  images: string[];
+  images: string[] | Record<string, string>;
   altText: string;
   options?: EmblaOptionsType;
   showArrows?: boolean;
@@ -18,13 +17,18 @@ interface ProjectImageCarouselProps {
 }
 
 const ProjectImageCarousel: React.FC<ProjectImageCarouselProps> = ({ 
-  images, 
+  images: initialImages,
   altText,
   options = { loop: true },
   showArrows = true,
   showDots = true,
   className
 }) => {
+  const images = React.useMemo(() => 
+    (Array.isArray(initialImages) ? initialImages : Object.values(initialImages)).filter(Boolean),
+    [initialImages]
+  );
+
   const [emblaRef, emblaApi] = useEmblaCarousel(options, [Autoplay({ delay: 4000, stopOnInteraction: true })]);
   const [selectedIndex, setSelectedIndex] = React.useState(0);
 
@@ -36,7 +40,7 @@ const ProjectImageCarousel: React.FC<ProjectImageCarouselProps> = ({
     if (!emblaApi) return;
     const onSelect = () => setSelectedIndex(emblaApi.selectedScrollSnap());
     emblaApi.on('select', onSelect);
-    onSelect(); // Set initial index
+    onSelect();
     return () => { emblaApi.off('select', onSelect); };
   }, [emblaApi]);
 
