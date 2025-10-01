@@ -9,15 +9,7 @@ import { notFound } from "next/navigation";
 import { db } from "@/lib/firebase/config";
 import { ref, get, child } from "firebase/database";
 import type { Locale } from '@/lib/i18n/i18n-config';
-import { i18n } from '@/lib/i18n/i18n-config';
 import { getDictionary } from '@/lib/i18n/get-dictionary';
-
-interface EditProjectPageProps {
-  params: {
-    id: string;
-    lang: Locale;
-  };
-}
 
 async function getProjectFromDB(id: string): Promise<Project | null> {
   try {
@@ -34,7 +26,7 @@ async function getProjectFromDB(id: string): Promise<Project | null> {
   }
 }
 
-export default async function EditProjectPage({ params }: EditProjectPageProps) {
+export default async function EditProjectPage({ params }: { params: { id: string; lang: Locale } }) {
   const { id, lang } = params;
   const dictionary = await getDictionary(lang);
   
