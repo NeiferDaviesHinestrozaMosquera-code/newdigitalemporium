@@ -3,6 +3,8 @@ import { Button } from '@/components/ui/button';
 import type { Service, Testimonial } from '@/lib/placeholder-data';
 import ServiceCard from '@/components/shared/ServiceCard';
 import TestimonialCard from '@/components/shared/TestimonialCard';
+import ScrollReveal from '@/components/shared/ScrollReveal';
+import ParallaxSection from '@/components/shared/ParallaxSection';
 import { ArrowRight, Zap } from 'lucide-react';
 import type { Metadata } from 'next';
 import { db } from "@/lib/firebase/config";
@@ -80,62 +82,86 @@ export default async function HomePage({ params }: { params: { lang: Locale } })
       </ParallaxHero>
 
       {/* Services Section */}
-      <section id="services" className="py-16 md:py-24 bg-background overflow-hidden">
+      <ParallaxSection id="services" className="py-16 md:py-24 bg-background overflow-hidden">
         <div className="container mx-auto px-4">
-          <h2 className="text-3xl md:text-4xl font-bold text-center text-primary mb-4 animate-in fade-in slide-in-from-bottom-5 duration-500">{dictionary.ourServices as string}</h2>
-          <p className="text-lg text-muted-foreground text-center mb-12 max-w-2xl mx-auto animate-in fade-in slide-in-from-bottom-5 delay-100 duration-500">
-            {dictionary.ourServicesDescription as string}
-          </p>
+          <ScrollReveal direction="up" delay={0.1}>
+            <h2 className="text-3xl md:text-4xl font-bold text-center text-primary mb-4">{dictionary.ourServices as string}</h2>
+          </ScrollReveal>
+          <ScrollReveal direction="up" delay={0.2}>
+            <p className="text-lg text-muted-foreground text-center mb-12 max-w-2xl mx-auto">
+              {dictionary.ourServicesDescription as string}
+            </p>
+          </ScrollReveal>
           {services.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
               {services.map((service, index) => ( 
-                <div key={service.id} className={`animate-in fade-in slide-in-from-bottom-10 duration-500`} style={{ animationDelay: `${index * 150 + 200}ms` }}>
+                <ScrollReveal 
+                  key={service.id} 
+                  direction={index % 2 === 0 ? "left" : "right"}
+                  delay={0.1 * index}
+                >
                   <ServiceCard service={service} lang={params.lang} />
-                </div>
+                </ScrollReveal>
               ))}
             </div>
           ) : <p className="text-center text-muted-foreground">No services to display currently.</p>}
-          <div className="text-center mt-12 animate-in fade-in zoom-in delay-500 duration-500">
-            <Button asChild variant="link" className="text-accent hover:text-accent/80 text-lg">
-              <Link href={`/${params.lang}/services`}>
-                {dictionary.viewAllServices as string} <ArrowRight className="ml-2 h-5 w-5" />
-              </Link>
-            </Button>
-          </div>
+          <ScrollReveal direction="up" delay={0.5}>
+            <div className="text-center mt-12">
+              <Button asChild variant="link" className="text-accent hover:text-accent/80 text-lg">
+                <Link href={`/${params.lang}/services`}>
+                  {dictionary.viewAllServices as string} <ArrowRight className="ml-2 h-5 w-5" />
+                </Link>
+              </Button>
+            </div>
+          </ScrollReveal>
         </div>
-      </section>
+      </ParallaxSection>
 
       {/* Testimonials Section */}
-      <section id="testimonials" className="py-16 md:py-24 bg-secondary/20 overflow-hidden">
+      <ParallaxSection id="testimonials" className="py-16 md:py-24 bg-secondary/20 overflow-hidden">
         <div className="container mx-auto px-4">
-          <h2 className="text-3xl md:text-4xl font-bold text-center text-primary mb-4 animate-in fade-in slide-in-from-bottom-5 duration-500">{dictionary.whatOurClientsSay as string}</h2>
-          <p className="text-lg text-muted-foreground text-center mb-12 max-w-2xl mx-auto animate-in fade-in slide-in-from-bottom-5 delay-100 duration-500">
-            {dictionary.clientsSayDescription as string}
-          </p>
+          <ScrollReveal direction="up" delay={0.1}>
+            <h2 className="text-3xl md:text-4xl font-bold text-center text-primary mb-4">{dictionary.whatOurClientsSay as string}</h2>
+          </ScrollReveal>
+          <ScrollReveal direction="up" delay={0.2}>
+            <p className="text-lg text-muted-foreground text-center mb-12 max-w-2xl mx-auto">
+              {dictionary.clientsSayDescription as string}
+            </p>
+          </ScrollReveal>
           {testimonials.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
               {testimonials.map((testimonial, index) => (
-                <div key={testimonial.id} className={`animate-in fade-in slide-in-from-bottom-10 duration-500`} style={{ animationDelay: `${index * 150 + 200}ms` }}>
+                <ScrollReveal 
+                  key={testimonial.id} 
+                  direction={index % 2 === 0 ? "left" : "right"}
+                  delay={0.1 * index}
+                >
                   <TestimonialCard testimonial={testimonial} />
-                </div>
+                </ScrollReveal>
               ))}
             </div>
           ) : <p className="text-center text-muted-foreground">No testimonials to display currently.</p>}
         </div>
-      </section>
+      </ParallaxSection>
 
       {/* Call to Action Section */}
-      <section className="py-16 md:py-24 bg-primary text-primary-foreground overflow-hidden">
+      <ParallaxSection className="py-16 md:py-24 bg-primary text-primary-foreground overflow-hidden">
         <div className="container mx-auto px-4 text-center">
-          <h2 className="text-3xl md:text-4xl font-bold mb-6 animate-in fade-in slide-in-from-bottom-5 duration-500">{dictionary.readyToStart as string}</h2>
-          <p className="text-lg md:text-xl max-w-2xl mx-auto mb-10 animate-in fade-in slide-in-from-bottom-5 delay-100 duration-500">
-            {dictionary.readyToStartDescription as string}
-          </p>
-          <Button asChild size="lg" className="bg-accent hover:bg-accent/90 text-accent-foreground px-10 py-4 rounded-lg text-xl animate-in fade-in zoom-in delay-300 duration-500">
-            <Link href={`/${params.lang}/quote-request`}>{dictionary.requestAQuoteNow as string}</Link>
-          </Button>
+          <ScrollReveal direction="up" delay={0.1}>
+            <h2 className="text-3xl md:text-4xl font-bold mb-6">{dictionary.readyToStart as string}</h2>
+          </ScrollReveal>
+          <ScrollReveal direction="up" delay={0.2}>
+            <p className="text-lg md:text-xl max-w-2xl mx-auto mb-10">
+              {dictionary.readyToStartDescription as string}
+            </p>
+          </ScrollReveal>
+          <ScrollReveal direction="up" delay={0.3}>
+            <Button asChild size="lg" className="bg-accent hover:bg-accent/90 text-accent-foreground px-10 py-4 rounded-lg text-xl">
+              <Link href={`/${params.lang}/quote-request`}>{dictionary.requestAQuoteNow as string}</Link>
+            </Button>
+          </ScrollReveal>
         </div>
-      </section>
+      </ParallaxSection>
     </div>
   );
 }

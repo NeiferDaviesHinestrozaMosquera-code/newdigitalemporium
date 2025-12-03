@@ -76,6 +76,18 @@ const nextConfig: NextConfig = {
         hostname: 'hoogjocezxaiysibtanl.supabase.co',
         port: '',
         pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'mir-s3-cdn-cf.behance.net',
+        port: '',
+        pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        hostname: '*.behance.net',
+        port: '',
+        pathname: '/**',
       }
     ],
     formats: ['image/webp', 'image/avif'],

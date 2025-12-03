@@ -10,9 +10,11 @@ import './globals.css';
 
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
-    <html lang="en">
-      <meta name="google-site-verification" content="-BY-Y13C6LfSUxnQEV7AEMDo0WWGmP8Q1ffBSVLy1Zs" />
-      <body>{children}</body>
+    <html lang="en" suppressHydrationWarning>
+      <head>
+        <meta name="google-site-verification" content="-BY-Y13C6LfSUxnQEV7AEMDo0WWGmP8Q1ffBSVLy1Zs" />
+      </head>
+      <body suppressHydrationWarning>{children}</body>
     </html>
   );
 }

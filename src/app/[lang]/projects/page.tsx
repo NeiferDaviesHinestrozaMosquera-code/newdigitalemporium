@@ -6,6 +6,8 @@ import { db } from "@/lib/firebase/config";
 import { ref, get } from "firebase/database";
 import type { Project } from '@/lib/placeholder-data';
 import ProjectCard from '@/components/shared/ProjectCard';
+import ScrollReveal from '@/components/shared/ScrollReveal';
+import ParallaxSection from '@/components/shared/ParallaxSection';
 
 export async function generateMetadata({ params }: { params: { lang: Locale } }): Promise<Metadata> {
   const dictionary = await getDictionary(params.lang);
@@ -40,27 +42,31 @@ export default async function ProjectsPage({ params }: { params: { lang: Locale 
   const projects = await getProjects();
 
   return (
-    <div className="container mx-auto px-4 py-12 md:py-16">
+    <ParallaxSection className="container mx-auto px-4 py-12 md:py-16">
       <header className="text-center mb-12 md:mb-16">
-        <h1 className="text-4xl md:text-5xl font-bold text-primary mb-4 tracking-tight">
-          {dictionary.projectsPageHeading}
-        </h1>
-        <p className="text-lg text-muted-foreground max-w-3xl mx-auto">
-          {dictionary.projectsPageSubheading}
-        </p>
+        <ScrollReveal direction="up" delay={0.1}>
+          <h1 className="text-4xl md:text-5xl font-bold text-primary mb-4 tracking-tight">
+            {dictionary.projectsPageHeading}
+          </h1>
+        </ScrollReveal>
+        <ScrollReveal direction="up" delay={0.2}>
+          <p className="text-lg text-muted-foreground max-w-3xl mx-auto">
+            {dictionary.projectsPageSubheading}
+          </p>
+        </ScrollReveal>
       </header>
 
       <main>
         {projects.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {projects.map((project, index) => (
-              <div 
-                key={project.id} 
-                className="animate-in fade-in slide-in-from-bottom-10 duration-500" 
-                style={{ animationDelay: `${index * 150}ms` }}
+              <ScrollReveal
+                key={project.id}
+                direction={index % 2 === 0 ? "left" : "right"}
+                delay={0.1 * (index % 3)}
               >
                 <ProjectCard project={project} dictionary={dictionary} lang={lang} />
-              </div>
+              </ScrollReveal>
             ))}
           </div>
         ) : (
@@ -72,6 +78,6 @@ export default async function ProjectsPage({ params }: { params: { lang: Locale 
           </div>
         )}
       </main>
-    </div>
+    </ParallaxSection>
   );
 }
