@@ -27,8 +27,8 @@ export async function generateStaticParams() {
 }
 
 // generateMetadata debe permanecer aquí para metadatos específicos del idioma
-export async function generateMetadata({ params }: { params: Promise<{ lang: Locale }> }): Promise<Metadata> {
-  const { lang } = await params;
+export async function generateMetadata({ params }: { params: { lang: Locale } }): Promise<Metadata> {
+  const { lang } = params;
   const dictionary = await getDictionary(lang);
   return {
     title: dictionary.siteTitle as string || 'Digital Emporium',
@@ -46,7 +46,7 @@ export const viewport: Viewport = {
 // Tipo actualizado para props con Promise
 type RootLayoutProps = {
   children: React.ReactNode;
-  params: Promise<{ lang: Locale }>;
+  params: { lang: Locale };
 };
 
 // El layout de idioma ya no debe tener <html> ni <body>
@@ -54,7 +54,7 @@ export default async function LocaleLayout({
   children,
   params,
 }: RootLayoutProps) {
-  const { lang } = await params;
+  const { lang } = params;
   
   return (
     // Se eliminan <html> y <body>
