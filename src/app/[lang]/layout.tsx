@@ -10,7 +10,7 @@ import { ThemeProvider } from 'next-themes';
 import type { Locale } from '@/lib/i18n/i18n-config';
 import { i18n } from '@/lib/i18n/i18n-config';
 import { getDictionary } from '@/lib/i18n/get-dictionary';
-import CustomCursor from '@/components/shared/CustomCursor'; // Importar el nuevo componente
+import CustomCursor from '@/components/shared/CustomCursor';
 
 const geistSans = Geist({
   variable: '--font-geist-sans',
@@ -26,9 +26,13 @@ export async function generateStaticParams() {
   return i18n.locales.map((locale) => ({ lang: locale }));
 }
 
-// generateMetadata debe permanecer aquí para metadatos específicos del idioma
-export async function generateMetadata({ params }: { params: { lang: Locale } }): Promise<Metadata> {
-  const { lang } = params;
+// generateMetadata ahora recibe params como Promise
+export async function generateMetadata({ 
+  params 
+}: { 
+  params: Promise<{ lang: Locale }> 
+}): Promise<Metadata> {
+  const { lang } = await params;
   const dictionary = await getDictionary(lang);
   return {
     title: dictionary.siteTitle as string || 'Digital Emporium',
@@ -46,18 +50,17 @@ export const viewport: Viewport = {
 // Tipo actualizado para props con Promise
 type RootLayoutProps = {
   children: React.ReactNode;
-  params: { lang: Locale };
+  params: Promise<{ lang: Locale }>;
 };
 
-// El layout de idioma ya no debe tener <html> ni <body>
-export default  function LocaleLayout({
+// El layout ahora es async y awaits params
+export default async function LocaleLayout({
   children,
   params,
 }: RootLayoutProps) {
-  const { lang } = params;
+  const { lang } = await params;
   
   return (
-    // Se eliminan <html> y <body>
     <div lang={lang} className={`${geistSans.variable} ${geistMono.variable} antialiased flex flex-col min-h-screen`}>
       <ThemeProvider
         attribute="class"
@@ -69,7 +72,7 @@ export default  function LocaleLayout({
           <Providers>
             <PublicHeader lang={lang} />
             <main className="flex-grow">{children}</main>
-            <PublicFooter lang={lang} /> {/* <-- RESTAURADO */}
+            <PublicFooter lang={lang} />
             <Toaster />
             <CustomCursor />
           </Providers>
