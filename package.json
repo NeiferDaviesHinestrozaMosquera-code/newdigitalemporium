@@ -51,7 +51,7 @@
     "genkit": "^1.8.0",
     "lucide-react": "^0.475.0",
     "negotiator": "^0.6.3",
-    "next": "^15.0.0",   
+    "next": "^16.0.6",   
     "next-themes": "^0.3.0",
     "patch-package": "^8.0.0",
     "react": "^18.3.1",

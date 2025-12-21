@@ -42,8 +42,8 @@ async function getProjectsFromDB(): Promise<Project[]> {
   }
 }
 
-export default async function AdminProjectsPage({ params }: { params: Promise<{ lang: Locale }> }) {
-  const { lang } = await params;
+export default async function AdminProjectsPage({ params }: { params: { lang: Locale } }) {
+  const { lang } =  params;
   const projects = await getProjectsFromDB();
   const dictionary = await getDictionary(lang || i18n.defaultLocale);
 

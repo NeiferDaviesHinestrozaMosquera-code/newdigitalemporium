@@ -23,7 +23,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
-import { createProjectAction, updateProjectAction } from "@/components/admin/project-actions";
+import { createProjectAction, updateProjectAction } from "@/components/admin/project-action";
 import type { Project } from "@/lib/placeholder-data";
 import { allIconNames } from "@/lib/placeholder-data";
 import { ProjectFormSchema, type ProjectFormValues } from "@/lib/schemas";

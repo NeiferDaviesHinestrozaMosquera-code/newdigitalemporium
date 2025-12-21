@@ -26,8 +26,8 @@ async function getProjectFromDB(id: string): Promise<Project | null> {
   }
 }
 
-export default async function EditProjectPage({ params }: { params: Promise<{ id: string; lang: Locale }> }) {
-  const { id, lang } = await params;
+export default async function EditProjectPage({ params }: { params: { id: string; lang: Locale } }) {
+  const { id, lang } =  params;
   const dictionary = await getDictionary(lang);
   
   if (!id) {

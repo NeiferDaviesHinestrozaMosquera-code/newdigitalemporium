@@ -1,10 +1,17 @@
+// src/app/[lang]/admin/site-settings/page.tsx
 
 import SiteSettingsForm from "@/components/admin/site-settings/SiteSettingsForm";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { getSiteContentAction } from "@/components/admin/actions";
 import type { Locale } from '@/lib/i18n/i18n-config';
 
-export default async function SiteSettingsPage({ params }: { params?: { lang?: Locale } }) {
+interface SiteSettingsPageProps {
+  params: {
+    lang: Locale;
+  };
+}
+
+export default async function SiteSettingsPage({ params }: SiteSettingsPageProps) {
   const siteContent = await getSiteContentAction();
 
   return (
