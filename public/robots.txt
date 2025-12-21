@@ -1,0 +1,13 @@
+
+# Allow all user agents to crawl the site
+User-agent: *
+Allow: /
+
+# Disallow crawling of the admin area
+Disallow: /admin/
+Disallow: /en/admin/
+Disallow: /es/admin/
+Disallow: /fr/admin/
+
+# Point to the sitemap
+Sitemap: https://your-domain.com/sitemap.xml

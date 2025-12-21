@@ -1,0 +1,6 @@
+name = "newdigitalemporium"
+compatibility_date = "2025-07-03"
+pages_build_output_dir = ".next"
+
+[build]
+command = "npm run build"
