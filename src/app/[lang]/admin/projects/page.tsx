@@ -4,7 +4,8 @@ import { iconMap, type Project } from "@/lib/placeholder-data";
 import ProjectImage from "@/components/admin/projects/ProjectImage";
 import Link from "next/link";
 import { PlusCircle, Edit, Trash2, ExternalLink, Github } from "lucide-react";
-import { deleteProjectAction } from "@/components/admin/actions";
+import { deleteProjectAction } from "@/components/admin/project-action";
+
 import {
   AlertDialog,
   AlertDialogAction,
