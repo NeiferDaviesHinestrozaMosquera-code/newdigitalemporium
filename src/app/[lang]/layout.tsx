@@ -50,7 +50,7 @@ type RootLayoutProps = {
 };
 
 // El layout de idioma ya no debe tener <html> ni <body>
-export default async function LocaleLayout({
+export default  function LocaleLayout({
   children,
   params,
 }: RootLayoutProps) {
