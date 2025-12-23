@@ -67,15 +67,20 @@ export default async function AdminProjectsPage({
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {projects.map((project) => {
             const IconComponent = iconMap[project.iconName] || iconMap['Layers'];
-            // ✅ CORRECCIÓN: Obtener la primera imagen del array
             const projectImage = Array.isArray(project.images) && project.images.length > 0 
               ? project.images[0] 
               : null;
             
+            // ✅ CORRECCIÓN: Normalizar technologies a un array
+            const techArray = Array.isArray(project.technologies) 
+              ? project.technologies 
+              : typeof project.technologies === 'string' 
+                ? project.technologies.split(',').map(t => t.trim())
+                : [];
+            
             return (
               <Card key={project.id} className="shadow-md flex flex-col bg-card">
                 <CardHeader className="p-0">
-                  {/* ✅ CORRECCIÓN: Usar projectImage en lugar de project.image */}
                   {projectImage && (
                     <ProjectImage 
                       src={projectImage}
@@ -103,16 +108,11 @@ export default async function AdminProjectsPage({
                   <div>
                     <h4 className="text-xs font-semibold mb-2 text-primary">{String(dictionary.projectCardKeyTechnologies)}:</h4>
                     <div className="flex flex-wrap gap-1.5">
-                      {Array.isArray(project.technologies) ? (
-                        project.technologies.slice(0, 5).map((tech) => (
+                      {/* ✅ CORRECCIÓN: Usar el array normalizado */}
+                      {techArray.length > 0 ? (
+                        techArray.slice(0, 5).map((tech) => (
                           <Badge key={tech} variant="secondary" className="text-xs px-2 py-0.5">
                             {tech}
-                          </Badge>
-                        ))
-                      ) : typeof project.technologies === 'string' ? (
-                        project.technologies.split(',').slice(0, 5).map((tech) => (
-                          <Badge key={tech.trim()} variant="secondary" className="text-xs px-2 py-0.5">
-                            {tech.trim()}
                           </Badge>
                         ))
                       ) : (
