@@ -26,14 +26,17 @@ export async function generateStaticParams() {
   return i18n.locales.map((locale) => ({ lang: locale }));
 }
 
-// ✅ CORRECCIÓN: Cambiar string a Locale en el tipo de params
-export async function generateMetadata({ 
+// ✅ SOLUCIÓN: Usar el tipo genérico correcto de Next.js
+type PageProps = {
+  params: Promise<{ lang: Locale }>;
+};
+
+export async function generateMetadata({
   params
-}: { 
-  params: Promise<{ lang: Locale }> 
-}): Promise<Metadata> {
+}: PageProps): Promise<Metadata> {
   const { lang } = await params;
   const dictionary = await getDictionary(lang);
+
   return {
     title: dictionary.siteTitle as string || 'Digital Emporium',
     description: dictionary.siteDescription as string || 'Your one-stop solution for cutting-edge digital services.',
@@ -47,20 +50,22 @@ export const viewport: Viewport = {
   ],
 };
 
-// ✅ CORRECCIÓN: Cambiar string a Locale en el tipo de params
-type RootLayoutProps = {
+// ✅ SOLUCIÓN: Agregar children al tipo PageProps
+type LayoutProps = PageProps & {
   children: React.ReactNode;
-  params: Promise<{ lang: Locale }>;
 };
 
 export default async function LocaleLayout({
   children,
   params,
-}: RootLayoutProps) {
+}: LayoutProps) {
   const { lang } = await params;
-  
+
   return (
-    <div lang={lang} className={`${geistSans.variable} ${geistMono.variable} antialiased flex flex-col min-h-screen`}>
+    <div
+      lang={lang}
+      className={`${geistSans.variable} ${geistMono.variable} antialiased flex flex-col min-h-screen`}
+    >
       <ThemeProvider
         attribute="class"
         defaultTheme="system"
