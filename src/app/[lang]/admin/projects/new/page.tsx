@@ -1,4 +1,3 @@
-
 import ProjectForm from "@/components/admin/projects/ProjectForm";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import Link from "next/link";
@@ -18,16 +17,19 @@ export default async function NewProjectPage({ params }: { params: Promise<{ lan
         <Button variant="outline" size="icon" asChild>
           <Link href={`/${lang}/admin/projects`}>
             <ArrowLeft className="h-4 w-4" />
-            <span className="sr-only">{dictionary.backToProjects}</span>
+            {/* ✅ Conversión explícita a string */}
+            <span className="sr-only">{String(dictionary.backToProjects)}</span>
           </Link>
         </Button>
-        <h1 className="text-2xl font-bold text-primary">{dictionary.addNewProject}</h1>
+        {/* ✅ Conversión explícita a string */}
+        <h1 className="text-2xl font-bold text-primary">{String(dictionary.addNewProject)}</h1>
       </div>
       
       <Card className="shadow-lg">
         <CardHeader>
-          <CardTitle>{dictionary.projectFormCardTitle}</CardTitle>
-          <CardDescription>{dictionary.projectFormCardDescriptionNew}</CardDescription>
+          {/* ✅ Conversión explícita a string */}
+          <CardTitle>{String(dictionary.projectFormCardTitle)}</CardTitle>
+          <CardDescription>{String(dictionary.projectFormCardDescriptionNew)}</CardDescription>
         </CardHeader>
         <CardContent>
           <ProjectForm formAction="create" dictionary={dictionary} />
