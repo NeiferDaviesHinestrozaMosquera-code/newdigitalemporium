@@ -71,13 +71,18 @@ export default async function AdminProjectsPage({
               ? project.images[0] 
               : null;
             
-            // ✅ CORRECCIÓN: Asegurarse de que technologies se trate correctamente
-            let techArray: string[] = [];
-            if (Array.isArray(project.technologies)) {
-              techArray = project.technologies;
-            } else if (project.technologies && typeof project.technologies === 'string') {
-              techArray = project.technologies.split(',').map(t => t.trim());
-            }
+            // ✅ CORRECCIÓN FINAL: Función helper para normalizar technologies
+            const getTechArray = (technologies: any): string[] => {
+              if (Array.isArray(technologies)) {
+                return technologies;
+              }
+              if (technologies && typeof technologies === 'string') {
+                return technologies.split(',').map(t => t.trim());
+              }
+              return [];
+            };
+            
+            const techArray = getTechArray(project.technologies);
             
             return (
               <Card key={project.id} className="shadow-md flex flex-col bg-card">
