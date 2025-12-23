@@ -26,11 +26,11 @@ export async function generateStaticParams() {
   return i18n.locales.map((locale) => ({ lang: locale }));
 }
 
-// ✅ CORRECCIÓN: params es Promise
+// ✅ CORRECCIÓN: Cambiar string a Locale en el tipo de params
 export async function generateMetadata({ 
   params
 }: { 
-  params: Promise<{ lang: string }> 
+  params: Promise<{ lang: Locale }> 
 }): Promise<Metadata> {
   const { lang } = await params;
   const dictionary = await getDictionary(lang);
@@ -47,13 +47,12 @@ export const viewport: Viewport = {
   ],
 };
 
-// ✅ CORRECCIÓN: params es Promise
+// ✅ CORRECCIÓN: Cambiar string a Locale en el tipo de params
 type RootLayoutProps = {
   children: React.ReactNode;
-  params: Promise<{ lang: string }>;
+  params: Promise<{ lang: Locale }>;
 };
 
-// ✅ CORRECCIÓN: Layout es async y hace await de params
 export default async function LocaleLayout({
   children,
   params,
