@@ -55,11 +55,9 @@ export default async function AdminProjectsPage({
   return (
     <div className="space-y-8">
       <div className="flex items-center justify-between">
-        {/* ✅ Conversión a string */}
         <h1 className="text-3xl font-bold text-primary">{String(dictionary.manageProjects)}</h1>
         <Button asChild className="bg-primary hover:bg-primary/90 text-primary-foreground">
           <Link href={`/${lang}/admin/projects/new`}>
-            {/* ✅ Conversión a string */}
             <PlusCircle className="mr-2 h-5 w-5" /> {String(dictionary.addNewProject)}
           </Link>
         </Button>
@@ -69,12 +67,18 @@ export default async function AdminProjectsPage({
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {projects.map((project) => {
             const IconComponent = iconMap[project.iconName] || iconMap['Layers'];
+            // ✅ CORRECCIÓN: Obtener la primera imagen del array
+            const projectImage = Array.isArray(project.images) && project.images.length > 0 
+              ? project.images[0] 
+              : null;
+            
             return (
               <Card key={project.id} className="shadow-md flex flex-col bg-card">
                 <CardHeader className="p-0">
-                  {project.image && (
+                  {/* ✅ CORRECCIÓN: Usar projectImage en lugar de project.image */}
+                  {projectImage && (
                     <ProjectImage 
-                      src={project.image}
+                      src={projectImage}
                       alt={project.title}
                       title={project.title}
                       dataAiHint={project.dataAiHint}
@@ -86,7 +90,6 @@ export default async function AdminProjectsPage({
                       <CardTitle className="text-lg font-semibold">{project.title}</CardTitle>
                     </div>
                     <CardDescription className="text-sm text-muted-foreground">
-                      {/* ✅ Conversión a string */}
                       {project.category} {project.clientName && `- ${String(dictionary.projectCardClient)}: ${project.clientName}`}
                     </CardDescription>
                   </div>
@@ -98,7 +101,6 @@ export default async function AdminProjectsPage({
                   </p>
                   
                   <div>
-                    {/* ✅ Conversión a string */}
                     <h4 className="text-xs font-semibold mb-2 text-primary">{String(dictionary.projectCardKeyTechnologies)}:</h4>
                     <div className="flex flex-wrap gap-1.5">
                       {Array.isArray(project.technologies) ? (
@@ -114,7 +116,6 @@ export default async function AdminProjectsPage({
                           </Badge>
                         ))
                       ) : (
-                        /* ✅ Conversión a string */
                         <Badge variant="outline" className="text-xs">{String(dictionary.noTechnologies)}</Badge>
                       )}
                     </div>
@@ -126,7 +127,6 @@ export default async function AdminProjectsPage({
                     {project.liveLink && (
                       <Button variant="outline" size="sm" asChild className="text-xs flex-1">
                         <Link href={project.liveLink} target="_blank" rel="noopener noreferrer">
-                          {/* ✅ Conversión a string */}
                           <ExternalLink className="mr-1.5 h-3.5 w-3.5" /> {String(dictionary.projectCardLiveDemo)}
                         </Link>
                       </Button>
@@ -134,7 +134,6 @@ export default async function AdminProjectsPage({
                     {project.repoLink && (
                       <Button variant="outline" size="sm" asChild className="text-xs flex-1">
                         <Link href={project.repoLink} target="_blank" rel="noopener noreferrer">
-                          {/* ✅ Conversión a string */}
                           <Github className="mr-1.5 h-3.5 w-3.5" /> {String(dictionary.projectCardViewCode)}
                         </Link>
                       </Button>
@@ -155,22 +154,18 @@ export default async function AdminProjectsPage({
                       </AlertDialogTrigger>
                       <AlertDialogContent>
                         <AlertDialogHeader>
-                          {/* ✅ Conversión a string */}
                           <AlertDialogTitle>{String(dictionary.areYouSure)}</AlertDialogTitle>
                           <AlertDialogDescription>
-                            {/* ✅ Conversión a string */}
                             {String(dictionary.deleteProjectWarning)} "{project.title}".
                           </AlertDialogDescription>
                         </AlertDialogHeader>
                         <AlertDialogFooter>
-                          {/* ✅ Conversión a string */}
                           <AlertDialogCancel>{String(dictionary.cancel)}</AlertDialogCancel>
                           <form action={async () => {
                             "use server";
                             if (!project.id) return;
                             await deleteProjectAction(project.id);
                           }}>
-                            {/* ✅ Conversión a string */}
                             <AlertDialogAction type="submit">{String(dictionary.delete)}</AlertDialogAction>
                           </form>
                         </AlertDialogFooter>
@@ -198,13 +193,11 @@ export default async function AdminProjectsPage({
                 <path d="m16.5 10-.8.8"/>
               </svg>
               <div>
-                {/* ✅ Conversión a string */}
                 <h3 className="text-xl font-bold mb-2 text-card-foreground">{String(dictionary.noProjectsFoundTitle)}</h3>
                 <p className="text-sm max-w-xs mx-auto">{String(dictionary.noProjectsFoundDescription)}</p>
               </div>
               <Button asChild className="mt-4 text-sm font-semibold">
                 <Link href={`/${lang}/admin/projects/new`}>
-                  {/* ✅ Conversión a string */}
                   <PlusCircle className="mr-2 h-5 w-5" />
                   {String(dictionary.addNewProjectCTA)}
                 </Link>
