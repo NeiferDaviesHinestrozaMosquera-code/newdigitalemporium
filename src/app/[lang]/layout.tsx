@@ -26,12 +26,13 @@ export async function generateStaticParams() {
   return i18n.locales.map((locale) => ({ lang: locale }));
 }
 
-// generateMetadata ahora recibe params directamente
+// ✅ CORRECCIÓN: params es Promise
 export async function generateMetadata({ 
-  params: { lang }
+  params
 }: { 
-  params: { lang: string } 
+  params: Promise<{ lang: string }> 
 }): Promise<Metadata> {
+  const { lang } = await params;
   const dictionary = await getDictionary(lang);
   return {
     title: dictionary.siteTitle as string || 'Digital Emporium',
@@ -46,17 +47,18 @@ export const viewport: Viewport = {
   ],
 };
 
-// Tipo corregido para props
+// ✅ CORRECCIÓN: params es Promise
 type RootLayoutProps = {
   children: React.ReactNode;
-  params: { lang: string };
+  params: Promise<{ lang: string }>;
 };
 
-// El layout ahora es un componente de servidor síncrono
-export default function LocaleLayout({
+// ✅ CORRECCIÓN: Layout es async y hace await de params
+export default async function LocaleLayout({
   children,
-  params: { lang },
+  params,
 }: RootLayoutProps) {
+  const { lang } = await params;
   
   return (
     <div lang={lang} className={`${geistSans.variable} ${geistMono.variable} antialiased flex flex-col min-h-screen`}>
