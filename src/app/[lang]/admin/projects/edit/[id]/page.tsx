@@ -26,13 +26,11 @@ async function getProjectFromDB(id: string): Promise<Project | null> {
   }
 }
 
-// ✅ CORRECCIÓN: params ahora es una Promise
 export default async function EditProjectPage({ 
   params 
 }: { 
   params: Promise<{ id: string; lang: Locale }> 
 }) {
-  // ✅ Await params antes de usarlo
   const { id, lang } = await params;
   const dictionary = await getDictionary(lang);
 
@@ -52,18 +50,21 @@ export default async function EditProjectPage({
         <Button variant="outline" size="icon" asChild>
           <Link href={`/${lang}/admin/projects`}>
             <ArrowLeft className="h-4 w-4" />
-            <span className="sr-only">{dictionary.backToProjects}</span>
+            {/* ✅ Conversión explícita a string */}
+            <span className="sr-only">{String(dictionary.backToProjects)}</span>
           </Link>
         </Button>
         <h1 className="text-2xl font-bold text-primary">
-          {`${dictionary.editProjectTitle}: ${project.title}`}
+          {/* ✅ Conversión explícita a string */}
+          {`${String(dictionary.editProjectTitle)}: ${project.title}`}
         </h1>
       </div>
 
       <Card className="shadow-lg">
         <CardHeader>
-          <CardTitle>{dictionary.projectFormCardTitle}</CardTitle>
-          <CardDescription>{dictionary.projectFormCardDescriptionUpdate}</CardDescription>
+          {/* ✅ Conversión explícita a string */}
+          <CardTitle>{String(dictionary.projectFormCardTitle)}</CardTitle>
+          <CardDescription>{String(dictionary.projectFormCardDescriptionUpdate)}</CardDescription>
         </CardHeader>
         <CardContent>
           <ProjectForm 
