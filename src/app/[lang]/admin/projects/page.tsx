@@ -71,12 +71,13 @@ export default async function AdminProjectsPage({
               ? project.images[0] 
               : null;
             
-            // ✅ CORRECCIÓN: Normalizar technologies a un array
-            const techArray = Array.isArray(project.technologies) 
-              ? project.technologies 
-              : typeof project.technologies === 'string' 
-                ? project.technologies.split(',').map(t => t.trim())
-                : [];
+            // ✅ CORRECCIÓN: Asegurarse de que technologies se trate correctamente
+            let techArray: string[] = [];
+            if (Array.isArray(project.technologies)) {
+              techArray = project.technologies;
+            } else if (project.technologies && typeof project.technologies === 'string') {
+              techArray = project.technologies.split(',').map(t => t.trim());
+            }
             
             return (
               <Card key={project.id} className="shadow-md flex flex-col bg-card">
@@ -108,7 +109,6 @@ export default async function AdminProjectsPage({
                   <div>
                     <h4 className="text-xs font-semibold mb-2 text-primary">{String(dictionary.projectCardKeyTechnologies)}:</h4>
                     <div className="flex flex-wrap gap-1.5">
-                      {/* ✅ CORRECCIÓN: Usar el array normalizado */}
                       {techArray.length > 0 ? (
                         techArray.slice(0, 5).map((tech) => (
                           <Badge key={tech} variant="secondary" className="text-xs px-2 py-0.5">
