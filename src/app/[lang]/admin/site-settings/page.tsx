@@ -5,14 +5,16 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { getSiteContentAction } from "@/components/admin/actions";
 import type { Locale } from '@/lib/i18n/i18n-config';
 
-// Definición explícita de la interfaz para evitar conflictos con PageProps
+// ✅ CORRECCIÓN: params ahora es Promise
 interface SiteSettingsPageProps {
-  params: {
+  params: Promise<{
     lang: Locale;
-  };
+  }>;
 }
 
 export default async function SiteSettingsPage({ params }: SiteSettingsPageProps) {
+  // ✅ Await params antes de desestructurar
+  const { lang } = await params;
   const siteContent = await getSiteContentAction();
 
   return (
