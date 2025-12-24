@@ -111,7 +111,6 @@ const nextConfig: NextConfig = {
       'handlebars',
       'dotprompt'
     ],
-    optimizePackageImports: ['lucide-react'],
   },
 };
 
