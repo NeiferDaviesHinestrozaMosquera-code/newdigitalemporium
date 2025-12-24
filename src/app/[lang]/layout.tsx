@@ -26,15 +26,15 @@ export async function generateStaticParams() {
   return i18n.locales.map((locale) => ({ lang: locale }));
 }
 
-// ✅ SOLUCIÓN: Usar el tipo genérico correcto de Next.js
+// CORRECCIÓN: Se elimina 'Promise' de la definición de params
 type PageProps = {
-  params: Promise<{ lang: Locale }>;
+  params: { lang: Locale };
 };
 
 export async function generateMetadata({
   params
 }: PageProps): Promise<Metadata> {
-  const { lang } = await params;
+  const { lang } = params; // CORRECCIÓN: Se elimina 'await'
   const dictionary = await getDictionary(lang);
 
   return {
@@ -50,7 +50,6 @@ export const viewport: Viewport = {
   ],
 };
 
-// ✅ SOLUCIÓN: Agregar children al tipo PageProps
 type LayoutProps = PageProps & {
   children: React.ReactNode;
 };
@@ -59,7 +58,7 @@ export default async function LocaleLayout({
   children,
   params,
 }: LayoutProps) {
-  const { lang } = await params;
+  const { lang } = params; // CORRECCIÓN: Se elimina 'await'
 
   return (
     <div

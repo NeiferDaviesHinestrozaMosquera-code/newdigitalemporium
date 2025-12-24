@@ -7,8 +7,9 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { getSiteContentAction } from '@/components/admin/actions'; // Import the action
 import type { AboutPageContent } from '@/lib/placeholder-data';
 
-export async function generateMetadata({ params }: { params: Promise<{ lang: Locale }> }): Promise<Metadata> {
-  const { lang } = await params;
+// CORRECCIÓN: Se elimina 'Promise' de la definición de params
+export async function generateMetadata({ params }: { params: { lang: Locale } }): Promise<Metadata> {
+  const { lang } = params; // CORRECCIÓN: Se elimina 'await'
   const siteContent = await getSiteContentAction();
   return {
     title: siteContent.aboutPage.pageTitle[lang] || "About Us",
@@ -16,8 +17,9 @@ export async function generateMetadata({ params }: { params: Promise<{ lang: Loc
   };
 }
 
-export default async function AboutUsPage({ params }: { params: Promise<{ lang: Locale }> }) {
-  const { lang } = await params;
+// CORRECCIÓN: Se elimina 'Promise' de la definición de params
+export default async function AboutUsPage({ params }: { params: { lang: Locale } }) {
+  const { lang } = params; // CORRECCIÓN: Se elimina 'await'
   const dictionary = await getDictionary(lang); // For UI labels if any
   const siteContent = await getSiteContentAction();
   const about = siteContent.aboutPage;

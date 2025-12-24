@@ -13,8 +13,9 @@ import { getDictionary } from '@/lib/i18n/get-dictionary';
 import { i18n, type Locale } from '@/lib/i18n/i18n-config';
 import ParallaxHero from '@/components/shared/ParallaxHero';
 
-export async function generateMetadata({ params }: { params: Promise<{ lang: Locale }> }): Promise<Metadata> {
-  const { lang } = await params;
+// CORRECCIÓN: Se elimina 'Promise' de la definición de params
+export async function generateMetadata({ params }: { params: { lang: Locale } }): Promise<Metadata> {
+  const { lang } = params; // CORRECCIÓN: Se elimina 'await'
   const dictionary = await getDictionary(lang);
   return {
     title: dictionary.heroTitle as string || 'Digital Emporium - Innovative Digital Solutions',
@@ -49,8 +50,9 @@ async function getHomePageData(): Promise<{ services: Service[], testimonials: T
   }
 }
 
-export default async function HomePage({ params }: { params: Promise<{ lang: Locale }> }) {
-  const { lang } = await params;
+// CORRECCIÓN: Se elimina 'Promise' de la definición de params
+export default async function HomePage({ params }: { params: { lang: Locale } }) {
+  const { lang } = params; // CORRECCIÓN: Se elimina 'await'
   const { services, testimonials } = await getHomePageData();
   const dictionary = await getDictionary(lang);
 
