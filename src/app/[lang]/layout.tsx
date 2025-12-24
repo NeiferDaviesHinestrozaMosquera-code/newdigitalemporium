@@ -26,15 +26,15 @@ export async function generateStaticParams() {
   return i18n.locales.map((locale) => ({ lang: locale }));
 }
 
-// CORRECCIÓN: Se elimina 'Promise' de la definición de params
+// ✅ CORRECCIÓN: params ahora es una Promise
 type PageProps = {
-  params: { lang: Locale };
+  params: Promise<{ lang: Locale }>;
 };
 
 export async function generateMetadata({
   params
 }: PageProps): Promise<Metadata> {
-  const { lang } = params; // CORRECCIÓN: Se elimina 'await'
+  const { lang } = await params; // ✅ Agregar await
   const dictionary = await getDictionary(lang);
 
   return {
@@ -58,7 +58,7 @@ export default async function LocaleLayout({
   children,
   params,
 }: LayoutProps) {
-  const { lang } = params; // CORRECCIÓN: Se elimina 'await'
+  const { lang } = await params; // ✅ Agregar await
 
   return (
     <div

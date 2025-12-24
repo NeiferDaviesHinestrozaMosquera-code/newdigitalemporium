@@ -4,12 +4,16 @@ import { Users, Target, Eye } from 'lucide-react';
 import { getDictionary } from '@/lib/i18n/get-dictionary';
 import { i18n, type Locale } from '@/lib/i18n/i18n-config';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { getSiteContentAction } from '@/components/admin/actions'; // Import the action
+import { getSiteContentAction } from '@/components/admin/actions';
 import type { AboutPageContent } from '@/lib/placeholder-data';
 
-// CORRECCIÓN: Se elimina 'Promise' de la definición de params
-export async function generateMetadata({ params }: { params: { lang: Locale } }): Promise<Metadata> {
-  const { lang } = params; // CORRECCIÓN: Se elimina 'await'
+// ✅ CORRECCIÓN: params ahora es una Promise
+export async function generateMetadata({ 
+  params 
+}: { 
+  params: Promise<{ lang: Locale }> 
+}): Promise<Metadata> {
+  const { lang } = await params; // ✅ Agregar await
   const siteContent = await getSiteContentAction();
   return {
     title: siteContent.aboutPage.pageTitle[lang] || "About Us",
@@ -17,10 +21,14 @@ export async function generateMetadata({ params }: { params: { lang: Locale } })
   };
 }
 
-// CORRECCIÓN: Se elimina 'Promise' de la definición de params
-export default async function AboutUsPage({ params }: { params: { lang: Locale } }) {
-  const { lang } = params; // CORRECCIÓN: Se elimina 'await'
-  const dictionary = await getDictionary(lang); // For UI labels if any
+// ✅ CORRECCIÓN: params ahora es una Promise
+export default async function AboutUsPage({ 
+  params 
+}: { 
+  params: Promise<{ lang: Locale }> 
+}) {
+  const { lang } = await params; // ✅ Agregar await
+  const dictionary = await getDictionary(lang);
   const siteContent = await getSiteContentAction();
   const about = siteContent.aboutPage;
 
