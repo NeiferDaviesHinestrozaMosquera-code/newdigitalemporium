@@ -1,3 +1,4 @@
+
 import type { Metadata, Viewport } from 'next';
 import { Geist, Geist_Mono } from 'next/font/google';
 import '../globals.css';
@@ -29,12 +30,12 @@ export async function generateStaticParams() {
 interface LayoutProps {
   children: React.ReactNode;
   params: {
-    lang: Locale;
+    lang: string; // Changed back to string
   };
 }
 
 export async function generateMetadata({ params }: LayoutProps): Promise<Metadata> {
-  const dictionary = await getDictionary(params.lang);
+  const dictionary = await getDictionary(params.lang as Locale);
 
   return {
     title: (dictionary.siteTitle as string) || 'Digital Emporium',
@@ -55,7 +56,7 @@ export default function LocaleLayout({ children, params }: LayoutProps) {
   const { lang } = params;
 
   return (
-    <div
+    <html
       lang={lang}
       className={`${geistSans.variable} ${geistMono.variable} antialiased flex flex-col min-h-screen`}
     >
@@ -67,14 +68,14 @@ export default function LocaleLayout({ children, params }: LayoutProps) {
       >
         <AuthProvider>
           <Providers>
-            <PublicHeader lang={lang} />
+            <PublicHeader lang={lang as Locale} />
             <main className="flex-grow">{children}</main>
-            <PublicFooter lang={lang} />
+            <PublicFooter lang={lang as Locale} />
             <Toaster />
             <CustomCursor />
           </Providers>
         </AuthProvider>
       </ThemeProvider>
-    </div>
+    </html>
   );
 }

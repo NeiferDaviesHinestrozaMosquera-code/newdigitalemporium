@@ -4,15 +4,14 @@ import { getDictionary } from "@/lib/i18n/get-dictionary";
 import { Locale } from "@/lib/i18n/i18n-config";
 import { fetchAvailableServices } from "@/lib/placeholder-data";
 
-// Ajuste para que coincida con la firma esperada por Next.js
 interface PageProps {
-  params: Promise<{
+  params: {
     lang: Locale;
-  }>;
+  };
 }
 
 export default async function ContactPage({ params }: PageProps) {
-  const { lang } = await params; // Se resuelve la promesa para obtener el idioma
+  const { lang } = params;
   const dictionary = await getDictionary(lang);
   const availableServices = await fetchAvailableServices();
 
