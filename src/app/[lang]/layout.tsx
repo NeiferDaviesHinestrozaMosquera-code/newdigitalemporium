@@ -26,10 +26,22 @@ export async function generateStaticParams() {
   return i18n.locales.map((locale) => ({ lang: locale }));
 }
 
-// ✅ SOLUCIÓN: Usar el helper LayoutProps de Next.js 15
+// ✅ Definir tipos explícitos con Locale
+type PageParams = {
+  lang: Locale;
+};
+
+type PageProps = {
+  params: Promise<PageParams>;
+};
+
+type LayoutProps = PageProps & {
+  children: React.ReactNode;
+};
+
 export async function generateMetadata({
   params
-}: LayoutProps<'/[lang]'>): Promise<Metadata> {
+}: PageProps): Promise<Metadata> {
   const { lang } = await params;
   const dictionary = await getDictionary(lang);
 
@@ -46,11 +58,10 @@ export const viewport: Viewport = {
   ],
 };
 
-// ✅ SOLUCIÓN: Usar el helper LayoutProps de Next.js 15
 export default async function LocaleLayout({
   children,
   params,
-}: LayoutProps<'/[lang]'>) {
+}: LayoutProps) {
   const { lang } = await params;
 
   return (
