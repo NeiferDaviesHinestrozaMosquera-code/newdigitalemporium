@@ -1,4 +1,3 @@
-
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -31,6 +30,8 @@ import React from "react";
 import { useRouter } from "next/navigation";
 import type { Locale } from "@/lib/i18n/i18n-config";
 
+// Este componente es ahora un "Client Component"
+
 interface QuoteRequestFormProps {
   availableServices: Service[];
   lang: Locale;
@@ -40,7 +41,7 @@ interface QuoteRequestFormProps {
   }
 }
 
-export default function QuoteRequestForm({ availableServices, lang, labels }: QuoteRequestFormProps) {
+export function QuoteRequestForm({ availableServices, lang, labels }: QuoteRequestFormProps) {
   const { toast } = useToast();
   const router = useRouter(); 
   const [isSubmittingClient, setIsSubmittingClient] = React.useState(false);
@@ -75,7 +76,6 @@ export default function QuoteRequestForm({ availableServices, lang, labels }: Qu
           title: "Request Submitted!",
           description: "Redirecting you to the admin panel to view the new inquiry.",
         });
-        // Redirect to the inquiries page with a success status and the new ID
         router.push(`/${lang}/admin/inquiries?status=success&newInquiryId=${result.newInquiryId}`);
       } else {
         toast({
