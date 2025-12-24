@@ -22,48 +22,37 @@ const geistMono = Geist_Mono({
   subsets: ['latin'],
 });
 
-// ✅ FIX: Especificar el tipo de retorno explícitamente
-export async function generateStaticParams(): Promise<Array<{ lang: Locale }>> {
-  return i18n.locales.map((locale) => ({ lang: locale as Locale }));
+export async function generateStaticParams() {
+  return i18n.locales.map((locale) => ({ lang: locale }));
 }
 
-// ✅ Definir tipos explícitos con Locale
-type PageParams = {
-  lang: Locale;
-};
-
-type PageProps = {
-  params: Promise<PageParams>;
-};
-
-type LayoutProps = PageProps & {
+interface LayoutProps {
   children: React.ReactNode;
-};
+  params: {
+    lang: Locale;
+  };
+}
 
-export async function generateMetadata({
-  params
-}: PageProps): Promise<Metadata> {
-  const { lang } = await params;
-  const dictionary = await getDictionary(lang);
+export async function generateMetadata({ params }: LayoutProps): Promise<Metadata> {
+  const dictionary = await getDictionary(params.lang);
 
   return {
-    title: dictionary.siteTitle as string || 'Digital Emporium',
-    description: dictionary.siteDescription as string || 'Your one-stop solution for cutting-edge digital services.',
+    title: (dictionary.siteTitle as string) || 'Digital Emporium',
+    description:
+      (dictionary.siteDescription as string) ||
+      'Your one-stop solution for cutting-edge digital services.',
   };
 }
 
 export const viewport: Viewport = {
   themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "white" },
-    { media: "(prefers-color-scheme: dark)", color: "black" },
+    { media: '(prefers-color-scheme: light)', color: 'white' },
+    { media: '(prefers-color-scheme: dark)', color: 'black' },
   ],
 };
 
-export default async function LocaleLayout({
-  children,
-  params,
-}: LayoutProps) {
-  const { lang } = await params;
+export default function LocaleLayout({ children, params }: LayoutProps) {
+  const { lang } = params;
 
   return (
     <div
