@@ -2,7 +2,7 @@
 import { QuoteRequestForm } from "@/components/forms/QuoteRequestForm";
 import { getDictionary } from "@/lib/i18n/get-dictionary";
 import { Locale } from "@/lib/i18n/i18n-config";
-import { fetchAvailableServices } from "@/lib/data/services";
+import { fetchAvailableServices } from "@/lib/placeholder-data";
 
 interface PageProps {
   params: {
