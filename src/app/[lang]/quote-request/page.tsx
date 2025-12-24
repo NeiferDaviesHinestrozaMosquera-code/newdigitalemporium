@@ -1,13 +1,25 @@
+
 import { QuoteRequestForm } from "@/components/forms/QuoteRequestForm";
 import { getDictionary } from "@/lib/i18n/get-dictionary";
 import { Locale } from "@/lib/i18n/i18n-config";
+import { fetchAvailableServices } from "@/lib/data/services";
 
-export default async function QuoteRequestPage({
-  params: { lang },
-}: {
-  params: { lang: Locale };
-}) {
+interface PageProps {
+  params: {
+    lang: Locale;
+  };
+}
+
+export default async function QuoteRequestPage({ params }: PageProps) {
+  const { lang } = params;
   const dictionary = await getDictionary(lang);
+  const availableServices = await fetchAvailableServices();
+
+  const formLabels = {
+    submitting: dictionary.quoteRequest.form.submitting,
+    sendRequest: dictionary.quoteRequest.form.sendRequest,
+  };
+
   return (
     <section className="py-12 md:py-20">
       <div className="container mx-auto px-4">
@@ -18,7 +30,11 @@ export default async function QuoteRequestPage({
           {dictionary.quoteRequest.description}
         </p>
         <div className="max-w-2xl mx-auto">
-          <QuoteRequestForm dictionary={dictionary} />
+          <QuoteRequestForm
+            availableServices={availableServices}
+            lang={lang}
+            labels={formLabels}
+          />
         </div>
       </div>
     </section>
