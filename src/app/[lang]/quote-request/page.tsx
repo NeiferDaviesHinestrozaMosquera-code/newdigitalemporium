@@ -4,14 +4,14 @@ import { getDictionary } from "@/lib/i18n/get-dictionary";
 import { Locale } from "@/lib/i18n/i18n-config";
 import { fetchAvailableServices } from "@/lib/placeholder-data";
 
-interface PageProps {
-  params: Promise<{
+interface QuoteRequestPageProps {
+  params: {
     lang: Locale;
-  }>;
+  };
 }
 
-export default async function QuoteRequestPage({ params }: PageProps) {
-  const { lang } = await params;
+export default async function QuoteRequestPage({ params }: QuoteRequestPageProps) {
+  const { lang } = params;
   const dictionary = await getDictionary(lang);
   const availableServices = await fetchAvailableServices();
 

@@ -27,22 +27,21 @@ export async function generateStaticParams() {
   return i18n.locales.map((locale) => ({ lang: locale }));
 }
 
-interface LayoutProps {
+interface RootLayoutProps {
   children: React.ReactNode;
-  params: Promise<{ // Ajustado a Promise para que coincida con el error
+  params: {
     lang: Locale;
-  }>;
+  };
 }
 
-export async function generateMetadata({ params }: LayoutProps): Promise<Metadata> {
-  const resolvedParams = await params; // Se resuelve la promesa aquí
-  const dictionary = await getDictionary(resolvedParams.lang);
-
+export async function generateMetadata({ params }: RootLayoutProps): Promise<Metadata> {
+  const dictionary = await getDictionary(params.lang);
   return {
-    title: (dictionary.siteTitle as string) || 'Digital Emporium',
-    description:
-      (dictionary.siteDescription as string) ||
-      'Your one-stop solution for cutting-edge digital services.',
+    title: {
+      default: dictionary.siteTitle as string,
+      template: `%s | ${dictionary.siteTitle as string}`,
+    },
+    description: dictionary.siteDescription as string,
   };
 }
 
@@ -53,31 +52,31 @@ export const viewport: Viewport = {
   ],
 };
 
-export default async function LocaleLayout({ children, params }: LayoutProps) {
-  const { lang } = await params; // Se resuelve la promesa aquí
-
+export default function RootLayout({
+  children,
+  params,
+}: Readonly<RootLayoutProps>) {
   return (
-    <html
-      lang={lang}
-      className={`${geistSans.variable} ${geistMono.variable} antialiased flex flex-col min-h-screen`}
-    >
-    <body>
-      <ThemeProvider
-        attribute="class"
-        defaultTheme="system"
-        enableSystem
-        disableTransitionOnChange
+    <html lang={params.lang} suppressHydrationWarning>
+      <body
+        className={`${geistSans.variable} ${geistMono.variable} antialiased flex flex-col min-h-screen`}
       >
-        <AuthProvider>
-          <Providers>
-            <PublicHeader lang={lang} />
-            <main className="flex-grow">{children}</main>
-            <PublicFooter lang={lang} />
-            <Toaster />
-            <CustomCursor />
-          </Providers>
-        </AuthProvider>
-      </ThemeProvider>
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="system"
+          enableSystem
+          disableTransitionOnChange
+        >
+          <AuthProvider>
+            <Providers>
+              <PublicHeader lang={params.lang} />
+              <main className="flex-grow">{children}</main>
+              <PublicFooter lang={params.lang} />
+              <Toaster />
+              <CustomCursor />
+            </Providers>
+          </AuthProvider>
+        </ThemeProvider>
       </body>
     </html>
   );
