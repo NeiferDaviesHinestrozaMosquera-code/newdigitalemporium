@@ -11,7 +11,6 @@ import type { Locale } from '@/lib/i18n/i18n-config';
 import { i18n } from '@/lib/i18n/i18n-config';
 import { getDictionary } from '@/lib/i18n/get-dictionary';
 import CustomCursor from '@/components/shared/CustomCursor';
-import { ReactNode } from 'react';
 
 const geistSans = Geist({
   variable: '--font-geist-sans',
@@ -23,57 +22,70 @@ const geistMono = Geist_Mono({
   subsets: ['latin'],
 });
 
-export async function generateStaticParams() {
-  return i18n.locales.map((locale) => ({ lang: locale }));
+// ✅ FIX: Especificar el tipo de retorno explícitamente
+export async function generateStaticParams(): Promise<Array<{ lang: Locale }>> {
+  return i18n.locales.map((locale) => ({ lang: locale as Locale }));
 }
 
-// Tipos correctos para Next.js 15 (params es Promise)
-type Props = {
-  children: ReactNode;
-  params: Promise<{ lang: Locale }>;
+// ✅ Definir tipos explícitos con Locale
+type PageParams = {
+  lang: Locale;
 };
 
-export const metadata: Metadata = {
-  title: 'New Digital Emporium',
-  description: 'Tu descripción del sitio',
-  // Puedes personalizar más metadata aquí si lo deseas
+type PageProps = {
+  params: Promise<PageParams>;
 };
 
-export const viewport: Viewport = {
-  width: 'device-width',
-  initialScale: 1,
+type LayoutProps = PageProps & {
+  children: React.ReactNode;
 };
 
-export default async function LocaleLayout({ children, params }: Props) {
+export async function generateMetadata({
+  params
+}: PageProps): Promise<Metadata> {
   const { lang } = await params;
-
-  // Cargar el diccionario de traducciones para el locale actual
   const dictionary = await getDictionary(lang);
 
+  return {
+    title: dictionary.siteTitle as string || 'Digital Emporium',
+    description: dictionary.siteDescription as string || 'Your one-stop solution for cutting-edge digital services.',
+  };
+}
+
+export const viewport: Viewport = {
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "white" },
+    { media: "(prefers-color-scheme: dark)", color: "black" },
+  ],
+};
+
+export default async function LocaleLayout({
+  children,
+  params,
+}: LayoutProps) {
+  const { lang } = await params;
+
   return (
-    <html lang={lang} suppressHydrationWarning>
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+    <div
+      lang={lang}
+      className={`${geistSans.variable} ${geistMono.variable} antialiased flex flex-col min-h-screen`}
+    >
+      <ThemeProvider
+        attribute="class"
+        defaultTheme="system"
+        enableSystem
+        disableTransitionOnChange
       >
-        <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
-          <AuthProvider>
-            <Providers>
-              {/* Pasar el diccionario si algún provider o componente lo necesita */}
-              {/* Ejemplo si usas un TranslationProvider personalizado:
-              <TranslationProvider dictionary={dictionary}>
-              */}
-              <CustomCursor />
-              <PublicHeader />
-              <main className="min-h-screen">
-                {children}
-              </main>
-              <PublicFooter />
-              <Toaster />
-              {/* </TranslationProvider> */}
-            </Providers>
-          </AuthProvider>
-        </ThemeProvider>
-      </body>
-    </html>
+        <AuthProvider>
+          <Providers>
+            <PublicHeader lang={lang} />
+            <main className="flex-grow">{children}</main>
+            <PublicFooter lang={lang} />
+            <Toaster />
+            <CustomCursor />
+          </Providers>
+        </AuthProvider>
+      </ThemeProvider>
+    </div>
   );
 }
