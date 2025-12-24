@@ -154,6 +154,61 @@ export interface SiteContent {
   socialLinks: SocialLink[];
 }
 
+const availableServices: Service[] = [
+  {
+    id: 'web-dev',
+    title: 'Web Development',
+    shortDescription: 'Custom websites and web applications.',
+    description: 'We build responsive, fast, and secure websites and web applications tailored to your business needs. From marketing sites to complex enterprise platforms, we\'ve got you covered.',
+    iconName: 'Code2',
+    image: 'https://placehold.co/600x400/d3e8ff/4f46e5?text=Web+Dev',
+    dataAiHint: 'A service for building websites.',
+    priceInfo: 'Starts at $1,000',
+    slug: 'web-development'
+  },
+  {
+    id: 'mobile-dev',
+    title: 'Mobile App Development',
+    shortDescription: 'Native and cross-platform mobile apps.',
+    description: 'Engage your users with beautiful and intuitive mobile apps for iOS and Android. We develop both native and cross-platform applications using the latest technologies.',
+    iconName: 'Smartphone',
+    image: 'https://placehold.co/600x400/e9d5ff/4f46e5?text=Mobile+Dev',
+    dataAiHint: 'A service for building mobile apps.',
+    priceInfo: 'Starts at $5,000',
+    slug: 'mobile-app-development'
+  },
+  {
+    id: 'ai-solutions',
+    title: 'AI & Automation Solutions',
+    shortDescription: 'Integrate AI to automate and innovate.',
+    description: 'Leverage the power of Artificial Intelligence to automate processes, gain insights from data, and create innovative products. We offer custom AI model development, chatbot creation, and more.',
+    iconName: 'Bot',
+    image: 'https://placehold.co/600x400/f3e8ff/4f46e5?text=AI+Solutions',
+    dataAiHint: 'A service for AI and automation.',
+    priceInfo: 'Custom Pricing',
+    slug: 'ai-solutions'
+  },
+  {
+    id: 'ui-ux-design',
+    title: 'UI/UX Design',
+    shortDescription: 'User-centric and beautiful designs.',
+    description: 'Good design is good business. Our UI/UX design services focus on creating user-friendly interfaces that are both beautiful and effective at achieving your business goals.',
+    iconName: 'Palette',
+    image: 'https://placehold.co/600x400/ffdfe8/4f46e5?text=UI/UX+Design',
+    dataAiHint: 'A service for user interface and user experience design.',
+    priceInfo: 'Starts at $800',
+    slug: 'ui-ux-design'
+  },
+];
+
+export async function fetchAvailableServices(): Promise<Service[]> {
+  return new Promise(resolve => {
+    setTimeout(() => {
+      resolve(availableServices);
+    }, 100);
+  });
+}
+
 // Default structure for Firebase if nothing exists
 export const defaultSiteContent: SiteContent = {
   aboutPage: {
