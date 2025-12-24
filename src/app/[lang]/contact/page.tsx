@@ -4,14 +4,14 @@ import { getDictionary } from "@/lib/i18n/get-dictionary";
 import { Locale } from "@/lib/i18n/i18n-config";
 import { fetchAvailableServices } from "@/lib/placeholder-data";
 
-interface ContactPageProps {
-  params: {
-    lang: Locale;
-  };
-}
-
-export default async function ContactPage({ params }: ContactPageProps) {
-  const { lang } = params;
+// The fix is to type the props directly in the function signature
+// instead of using a separate interface. This is a common pattern to
+// resolve subtle type conflicts with Next.js's internal PageProps.
+export default async function ContactPage({ 
+  params: { lang } 
+}: { 
+  params: { lang: Locale } 
+}) {
   const dictionary = await getDictionary(lang);
   const availableServices = await fetchAvailableServices();
 
