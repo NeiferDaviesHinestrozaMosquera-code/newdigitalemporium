@@ -5,13 +5,13 @@ import { Locale } from "@/lib/i18n/i18n-config";
 import { fetchAvailableServices } from "@/lib/placeholder-data";
 
 interface PageProps {
-  params: {
+  params: Promise<{
     lang: Locale;
-  };
+  }>;
 }
 
 export default async function ContactPage({ params }: PageProps) {
-  const { lang } = params;
+  const { lang } = await params;
   const dictionary = await getDictionary(lang);
   const availableServices = await fetchAvailableServices();
 

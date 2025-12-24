@@ -29,13 +29,14 @@ export async function generateStaticParams() {
 
 interface LayoutProps {
   children: React.ReactNode;
-  params: {
-    lang: string; // Changed back to string
-  };
+  params: Promise<{ // Ajustado a Promise para que coincida con el error
+    lang: Locale;
+  }>;
 }
 
 export async function generateMetadata({ params }: LayoutProps): Promise<Metadata> {
-  const dictionary = await getDictionary(params.lang as Locale);
+  const resolvedParams = await params; // Se resuelve la promesa aquí
+  const dictionary = await getDictionary(resolvedParams.lang);
 
   return {
     title: (dictionary.siteTitle as string) || 'Digital Emporium',
@@ -52,14 +53,15 @@ export const viewport: Viewport = {
   ],
 };
 
-export default function LocaleLayout({ children, params }: LayoutProps) {
-  const { lang } = params;
+export default async function LocaleLayout({ children, params }: LayoutProps) {
+  const { lang } = await params; // Se resuelve la promesa aquí
 
   return (
     <html
       lang={lang}
       className={`${geistSans.variable} ${geistMono.variable} antialiased flex flex-col min-h-screen`}
     >
+    <body>
       <ThemeProvider
         attribute="class"
         defaultTheme="system"
@@ -68,14 +70,15 @@ export default function LocaleLayout({ children, params }: LayoutProps) {
       >
         <AuthProvider>
           <Providers>
-            <PublicHeader lang={lang as Locale} />
+            <PublicHeader lang={lang} />
             <main className="flex-grow">{children}</main>
-            <PublicFooter lang={lang as Locale} />
+            <PublicFooter lang={lang} />
             <Toaster />
             <CustomCursor />
           </Providers>
         </AuthProvider>
       </ThemeProvider>
+      </body>
     </html>
   );
 }
